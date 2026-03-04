@@ -1,1 +1,1 @@
-Amitakyu
+amitakyu
