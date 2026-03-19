@@ -1,0 +1,8 @@
+/* Keep custom CSS small; let Bootstrap do most styling. */
+:root {
+  --app-radius: 16px;
+}
+
+.rounded-4 {
+  border-radius: var(--app-radius) !important;
+}
