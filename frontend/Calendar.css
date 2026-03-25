@@ -1,47 +1,41 @@
-html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  font: 18px Helvetica;
-}
-
-#fullDiv {
-  position: absolute;
-  margin: 0;
-  padding: 0;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  overflow: hidden; 
-}
-
-ul {
-  margin: 0;
-  padding: 0;
-}
-
-li {
-  float: left;
-  display: block;
-  width: 14.2857%;
-  text-align: center;
-  list-style-type: none;
-}
-
-li:nth-child(n+1):nth-child(-n+7) {
-  font-weight: 900;
-  color: #e67e22;
-}
-
-li:nth-child(n+39), li:nth-child(n+8):nth-child(-n+16) {
-  font-weight: 900;
-  color: rgba(0,0,0,.3);
-}
-
-li:hover:nth-child(n+8):nth-child(-n+38), li:nth-child(17){
-  border-radius: 5px;
-  background-color: #1abc9c;
-  color: #ecf0f1;
-}
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .cal-day-name {
+      text-align: center;
+      font-size: .7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #6c757d;
+      padding: 4px 0;
+    }
+    .cal-day {
+      text-align: center;
+      font-size: .8rem;
+      padding: 5px 2px;
+      border-radius: 6px;
+      cursor: default;
+      line-height: 1.2;
+      color: #212529;
+    }
+    .cal-day.other-month { color: #adb5bd; }
+    .cal-day.today {
+      background-color: #0d6efd;
+      color: #fff;
+      font-weight: 700;
+      border-radius: 6px;
+    }
+    .cal-day.has-session::after {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #0d6efd;
+      margin: 2px auto 0;
+    }
+    .cal-day.today.has-session::after {
+      background: rgba(255,255,255,.75);
+    }
