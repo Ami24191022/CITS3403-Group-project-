@@ -1,9 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}View Plan - Study Planner{% endblock %}
+{% block description %}View your study plan details, sessions, and progress.{% endblock %}
+
+{% block content %}
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>View Plan - Study Planner</title>
+  <title>{% block title %}View Plan - Study Planner{% endblock %}</title>
   <meta name="description" content="View your study plan details, sessions, and progress." />
 
   <!-- Bootstrap 5 -->
