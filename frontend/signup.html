@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign up — Study Planner</title>
+  <meta name="description" content="Create a Study Planner account to save plans and share templates." />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="bg-light">
+
+  <!-- Navbar (logged out) -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand fw-semibold" href="index.html">Study Planner</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
+        aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="nav">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link" href="templates.html">Templates</a></li>
+        </ul>
+
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light btn-sm" href="login.html">Log in</a>
+          <a class="btn btn-warning btn-sm fw-semibold" href="signup.html">Sign up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-7 col-xl-6">
+
+          <header class="mb-4 text-center">
+            <h1 class="h3 fw-bold mb-1">Create your account</h1>
+            <p class="text-secondary mb-0">
+              Save study plans privately by default, and share templates only when you choose.
+            </p>
+          </header>
+
+          <section class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+
+              <!-- UI-only alert placeholders -->
+              <div id="formAlert" class="alert alert-danger d-none" role="alert" aria-live="polite"></div>
+
+              <form id="signupForm" action="#" method="post" novalidate>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="firstName" class="form-label fw-semibold">First name</label>
+                    <input id="firstName" name="firstName" type="text" class="form-control" autocomplete="given-name" required>
+                    <div class="invalid-feedback">Please enter your first name.</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="lastName" class="form-label fw-semibold">Last name</label>
+                    <input id="lastName" name="lastName" type="text" class="form-control" autocomplete="family-name" required>
+                    <div class="invalid-feedback">Please enter your last name.</div>
+                  </div>
+
+                  <div class="col-12">
+                    <label for="email" class="form-label fw-semibold">Email</label>
+                    <input id="email" name="email" type="email" class="form-control"
+                      placeholder="name@student.uwa.edu.au" autocomplete="email" required>
+                    <div class="form-text">Use an email you can access (we’ll use it for login).</div>
+                    <div class="invalid-feedback">Please enter a valid email address.</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="password" class="form-label fw-semibold">Password</label>
+                    <input id="password" name="password" type="password" class="form-control"
+                      autocomplete="new-password" minlength="8" required>
+                    <div class="form-text">
+                      At least 8 characters, include a letter and a number.
+                    </div>
+                    <div class="invalid-feedback">Password must be at least 8 characters.</div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label for="confirmPassword" class="form-label fw-semibold">Confirm password</label>
+                    <input id="confirmPassword" name="confirmPassword" type="password" class="form-control"
+                      autocomplete="new-password" required>
+                    <div class="invalid-feedback">Passwords must match.</div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" value="1" id="agree" required>
+                      <label class="form-check-label" for="agree">
+                        I agree to keep my account secure and not share my password.
+                      </label>
+                      <div class="invalid-feedback">You must agree before creating an account.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary w-100 btn-lg mt-4" type="submit">
+                  Create account
+                </button>
+
+                <p class="text-secondary small mt-3 mb-0">
+                  Already have an account? <a href="login.html">Log in</a>.
+                </p>
+
+                <p class="small text-secondary mt-3 mb-0">
+                  <span class="badge text-bg-light border">Checkpoint</span>
+                  UI mock — account creation will be implemented in Flask + database during backend development.
+                </p>
+              </form>
+            </div>
+          </section>
+
+          <!-- Extra help card (nice UX) -->
+          <section class="mt-3">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body">
+                <h2 class="h6 fw-bold mb-1">Privacy</h2>
+                <p class="text-secondary mb-0">
+                  Your plans are private by default. You can choose to share a plan as a public template later.
+                </p>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 border-top bg-white">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div class="text-secondary small">© 2026 Study Planner (CITS3403 Group Project)</div>
+      <div class="d-flex gap-3 small">
+        <a class="link-secondary" href="index.html">Home</a>
+        <a class="link-secondary" href="templates.html">Templates</a>
+        <a class="link-secondary" href="login.html">Log in</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Simple client-side checks (optional but nice for marks) -->
+  <script>
+    const form = document.getElementById('signupForm');
+    const alertBox = document.getElementById('formAlert');
+
+    function showError(msg) {
+      alertBox.textContent = msg;
+      alertBox.classList.remove('d-none');
+    }
+
+    function hideError() {
+      alertBox.classList.add('d-none');
+      alertBox.textContent = '';
+    }
+
+    form.addEventListener('submit', (e) => {
+      hideError();
+
+      // Bootstrap validation style
+      form.classList.add('was-validated');
+
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirmPassword').value;
+
+      // Simple password rule: letter + number
+      const hasLetter = /[A-Za-z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+
+      if (!form.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError("Please fix the highlighted fields.");
+        return;
+      }
+
+      if (password !== confirm) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('confirmPassword').setCustomValidity("Passwords do not match");
+        showError("Passwords do not match.");
+        return;
+      } else {
+        document.getElementById('confirmPassword').setCustomValidity("");
+      }
+
+      if (!(hasLetter && hasNumber)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showError("Password should contain at least one letter and one number.");
+        return;
+      }
+
+      // For Checkpoint 2/3 UI-only mock, prevent actual submission
+      e.preventDefault();
+      showError("Signup is a UI mock for now — backend will handle account creation later.");
+    });
+  </script>
+</body>
+</html>
