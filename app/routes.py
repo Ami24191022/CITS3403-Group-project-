@@ -31,11 +31,3 @@ def templates():
         {"title": "Balanced Weekly Routine", "author": "Jon", "weeks": 4},
     ]
     return render_template("templates.html", templates=templates)
-
-@main.route("/plan/view")
-def plan_view():
-    return render_template("plan-view.html")
-
-@main.route("/plan/edit")
-def plan_edit():
-    return render_template("plan-edit.html")

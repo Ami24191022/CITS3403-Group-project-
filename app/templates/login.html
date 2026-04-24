@@ -6,13 +6,13 @@
   <title>Log in — Study Planner</title>
   <meta name="description" content="Log in to access your study plans and templates." />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" /> <!-- Bootstrap 5 (CSS framework) -->
-  <link rel="stylesheet" href="style.css" /> <!-- my style CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> <!-- my style CSS -->
 </head>
 
 <body class="bg-light">
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark"> <!-- navbar -->
     <div class="container">
-      <a class="navbar-brand fw-semibold" href="index.html">Study Planner</a> <!-- homepage -->
+      <a class="navbar-brand fw-semibold" href="{{ url_for('main.home') }}">Study Planner</a> <!-- homepage -->
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
         aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -20,12 +20,12 @@
 
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0"> <!-- navbar list -->
-          <li class="nav-item"><a class="nav-link" href="templates.html">Templates</a></li> <!-- templates -->
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.templates') }}">Templates</a></li> <!-- templates -->
         </ul>
 
         <div class="d-flex gap-2">
-          <a class="btn btn-outline-light btn-sm" href="login.html">Log in</a> <!-- log in -->
-          <a class="btn btn-warning btn-sm fw-semibold" href="signup.html">Sign up</a> <!-- sign up -->
+          <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.login') }}">Log in</a> <!-- log in -->
+          <a class="btn btn-warning btn-sm fw-semibold" href="{{ url_for('main.signup') }}">Sign up</a> <!-- sign up -->
         </div>
       </div>
     </div>
@@ -94,7 +94,7 @@
 
                 <p class="text-secondary small mt-3 mb-0">
                   Don’t have an account?
-                  <a href="signup.html">Create one</a>.
+                  <a href="{{ url_for('main.signup') }}">Create one</a>.
                 </p>
 
                 <!-- Helpful note for marking (shows awareness of checkpoints) -->
@@ -128,9 +128,9 @@
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
       <div class="text-secondary small">© 2026 Study Planner (CITS3403 Group Project)</div>
       <div class="d-flex gap-3 small">
-        <a class="link-secondary" href="index.html">Home</a>
-        <a class="link-secondary" href="templates.html">Templates</a>
-        <a class="link-secondary" href="signup.html">Sign up</a>
+        <a class="link-secondary" href="{{ url_for('main.home') }}">Home</a>
+        <a class="link-secondary" href="{{ url_for('main.templates') }}">Templates</a>
+        <a class="link-secondary" href="{{ url_for('main.signup') }}">Sign up</a>
       </div>
     </div>
   </footer>
