@@ -1,4 +1,3 @@
-<!-- Ami   -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,77 +40,32 @@
     </div>
   </header>
 
-  <!-- Templates -->
+  <!-- Templates (Dynamic Rendering) -->
   <section class="pb-5">
     <div class="container">
       <div class="row g-4">
 
-        <!-- Template Card 1 (Popular) -->
+        {% for template in templates %}
         <div class="col-md-6">
           <div class="card h-100 shadow-sm border-0">
             <div class="card-body">
 
               <div class="d-flex justify-content-between align-items-center">
-                <h5 class="fw-semibold mb-0">Mid-Semester Plan</h5>
-                <span class="badge bg-warning text-dark">⭐️ Popular</span>
-              </div>
-
-              <p class="text-secondary small mt-2">
-                3-week plan to prepare efficiently for mid-semester exams.
-              </p>
-
-              <ul class="list-group mb-3">
-                <li class="list-group-item">Week 1 — Review lecture notes</li>
-                <li class="list-group-item">Week 2 — Practice problems</li>
-                <li class="list-group-item">Week 3 — Mock tests</li>
-              </ul>
-
-              <div class="d-flex justify-content-between align-items-center">
-                <div>
-                  <small class="text-secondary d-block">Created by Ami</small>
-                  <small class="text-secondary">Published on 20 May 2026</small>
-                </div>
-                <button class="btn btn-outline-primary btn-sm" disabled>Copy</button>
-              </div>
-
-              <!-- Public template indicator -->
-              <div class="mt-2">
-                <span class="badge bg-success">Public Template</span>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <!-- Template Card 2 -->
-        <div class="col-md-6">
-          <div class="card h-100 shadow-sm border-0">
-            <div class="card-body">
-
-              <div class="d-flex justify-content-between align-items-center">
-                <h5 class="fw-semibold mb-0">Weekly Study Routine</h5>
+                <h5 class="fw-semibold mb-0">{{ template.title }}</h5>
                 <span class="badge bg-secondary">Template</span>
               </div>
 
               <p class="text-secondary small mt-2">
-                A simple weekly structure to stay consistent.
+                {{ template.weeks }}-week study plan
               </p>
-
-              <ul class="list-group mb-3">
-                <li class="list-group-item">Monday — Review lectures</li>
-                <li class="list-group-item">Wednesday — Exercises</li>
-                <li class="list-group-item">Sunday — Summary</li>
-              </ul>
 
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <small class="text-secondary d-block">Created by Alisha</small>
-                  <small class="text-secondary">Published on 18 May 2026</small>
+                  <small class="text-secondary d-block">Created by {{ template.author }}</small>
                 </div>
                 <button class="btn btn-outline-primary btn-sm" disabled>Copy</button>
               </div>
 
-              <!-- Public template indicator -->
               <div class="mt-2">
                 <span class="badge bg-success">Public Template</span>
               </div>
@@ -119,9 +73,9 @@
             </div>
           </div>
         </div>
+        {% endfor %}
 
       </div>
-
     </div>
   </section>
 
@@ -138,4 +92,3 @@
 
 </body>
 </html>
-href="{{ url_for('main.login') }}"
