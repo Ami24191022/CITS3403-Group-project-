@@ -4,273 +4,76 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard — Study Planner</title>
-  <meta name="description" content="Manage your study plans and share templates." />
 
-  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body class="bg-light">
 
-  <!-- Navbar (logged in) -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <a class="navbar-brand fw-semibold" href="{{ url_for('main.home') }}">Study Planner</a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
-        aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.templates') }}>Templates</a></li>
-          <li class="nav-item"><a class="nav-link active" href="{{ url_for('main.dashboard') }}">My Plans</a></li>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.templates') }}">Templates</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{{ url_for('main.dashboard') }}">My Plans</a>
+          </li>
         </ul>
 
-        <div class="d-flex align-items-center gap-2">
-          <span class="text-white-50 small d-none d-md-inline">Logged in as</span>
-          <span class="badge text-bg-secondary">jon.lew</span>
-          <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.home') }}>Log out</a>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.home') }}">Log out</a>
         </div>
       </div>
     </div>
   </nav>
 
-  <!-- Page header -->
+  <!-- Header -->
   <header class="py-4">
     <div class="container">
-      <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-        <div>
-          <h1 class="h3 fw-bold mb-1">My Plans</h1>
-          <p class="text-secondary mb-0">
-            Create, edit, and share your study plans. Mark a plan as a template to help others.
-          </p>
-        </div>
-        <div class="d-flex gap-2">
-          <a class="btn btn-primary" href="{{ url_for('main.plan_edit') }}">
-            + Create Plan
-          </a>
-          <a class="btn btn-outline-secondary" href="{{ url_for('main.templates') }}">
-            Browse Templates
-          </a>
-        </div>
-      </div>
+      <h1 class="fw-bold">My Plans</h1>
+      <p class="text-secondary">Your study plans generated from backend data.</p>
     </div>
   </header>
 
+  <!-- Dynamic Plans -->
   <main class="pb-5">
     <div class="container">
+      <div class="row g-3">
 
-      <!-- Controls -->
-      <section class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-          <div class="row g-3 align-items-end">
-            <div class="col-md-6">
-              <label for="search" class="form-label fw-semibold">Search plans</label>
-              <input id="search" class="form-control" type="search" placeholder="e.g., CITS3403 sprint, Mid-sem revision" />
-            </div>
+        {% for plan in plans %}
+        <div class="col-lg-6">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
 
-            <div class="col-md-3">
-              <label for="status" class="form-label fw-semibold">Filter</label>
-              <select id="status" class="form-select">
-                <option selected>All</option>
-                <option>Active</option>
-                <option>Upcoming</option>
-                <option>Completed</option>
-              </select>
-            </div>
+              <h5 class="fw-semibold">{{ plan.title }}</h5>
+              <p class="text-secondary small">Auto generated plan</p>
 
-            <div class="col-md-3">
-              <label for="sort" class="form-label fw-semibold">Sort by</label>
-              <select id="sort" class="form-select">
-                <option selected>Most recent</option>
-                <option>Start date</option>
-                <option>End date</option>
-                <option>Title (A–Z)</option>
-              </select>
-            </div>
-          </div>
+              <span class="badge bg-primary">{{ plan.status }}</span>
 
-          <div class="d-flex flex-wrap gap-2 mt-3">
-            <span class="badge text-bg-light border">Tip: Share your best plan as a template for others.</span>
-            <span class="badge text-bg-light border">UI mock (backend comes later).</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Plans grid -->
-      <section aria-label="Plans list">
-        <div class="row g-3">
-
-
-          {% for plan in plans %}
-          <div class="col-lg-6">
-            <article class="card h-100 border-0 shadow-sm">
-              <div class="card-body">
-
-                <h2 class="h5 fw-semibold mb-1">{{ plan.title }}</h2>
-                <p class="text-secondary small mb-2">Auto generated plan</p>
-
-                <span class="badge text-bg-primary">{{ plan.status }}</span>
-
-              </div>
-            </article>
-          </div>
-          {% endfor %}
-
-        </div>
-    </section>
-
-    
-
-          <!-- Plan card 1 -->
-          <div class="col-lg-6">
-            <article class="card h-100 border-0 shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                  <div>
-                    <h2 class="h5 fw-semibold mb-1">CITS3403 Checkpoint Sprint</h2>
-                    <p class="text-secondary small mb-2">Plan for Week 5–7 deliverables + mock UI.</p>
-                    <div class="d-flex flex-wrap gap-2">
-                      <span class="badge text-bg-primary">Active</span>
-                      <span class="badge text-bg-light border">Start: 2026-03-20</span>
-                      <span class="badge text-bg-light border">End: 2026-04-03</span>
-                    </div>
-                  </div>
-
-                  <!-- Share badge (signals "template" feature) -->
-                  <div class="text-end">
-                    <span class="badge text-bg-success">Shared Template</span>
-                    <div class="small text-secondary mt-1">Public</div>
-                  </div>
-                </div>
-
-                <hr class="my-3" />
-
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Sessions</div>
-                      <div class="h5 fw-bold mb-0">8</div>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Progress</div>
-                      <div class="h5 fw-bold mb-0">62%</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                  <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.plan_view') }}">View</a>
-                  <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.plan_edit') }}">Edit</a>
-                  <button class="btn btn-outline-success btn-sm" type="button" disabled>
-                    Share / Unshare
-                  </button>
-                  <button class="btn btn-outline-danger btn-sm" type="button" disabled>
-                    Delete
-                  </button>
-                </div>
-
-                <p class="small text-secondary mt-3 mb-0">
-                  Last updated: 2 days ago
-                </p>
-              </div>
-            </article>
-          </div>
-
-          <!-- Plan card 2 -->
-          <div class="col-lg-6">
-            <article class="card h-100 border-0 shadow-sm">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start gap-3">
-                  <div>
-                    <h2 class="h5 fw-semibold mb-1">Mid-Sem Exam Revision</h2>
-                    <p class="text-secondary small mb-2">Focus weak topics + timed practice papers.</p>
-                    <div class="d-flex flex-wrap gap-2">
-                      <span class="badge text-bg-warning text-dark">Upcoming</span>
-                      <span class="badge text-bg-light border">Start: 2026-04-05</span>
-                      <span class="badge text-bg-light border">End: 2026-04-19</span>
-                    </div>
-                  </div>
-
-                  <div class="text-end">
-                    <span class="badge text-bg-secondary">Private</span>
-                    <div class="small text-secondary mt-1">Not shared</div>
-                  </div>
-                </div>
-
-                <hr class="my-3" />
-
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Sessions</div>
-                      <div class="h5 fw-bold mb-0">12</div>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Progress</div>
-                      <div class="h5 fw-bold mb-0">0%</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                  <a class="btn btn-outline-primary btn-sm" href="{{ url_for('main.plan_view') }}">View</a>
-                  <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.plan_edit') }}">Edit</a>
-                  <button class="btn btn-outline-success btn-sm" type="button" disabled>
-                    Share as template
-                  </button>
-                  <button class="btn btn-outline-danger btn-sm" type="button" disabled>
-                    Delete
-                  </button>
-                </div>
-
-                <p class="small text-secondary mt-3 mb-0">
-                  Last updated: today
-                </p>
-              </div>
-            </article>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- Empty state (optional section to show good UX) -->
-      <section class="mt-4">
-        <div class="card border-0 shadow-sm">
-          <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-            <div>
-              <h3 class="h6 fw-bold mb-1">No more plans?</h3>
-              <p class="text-secondary mb-0">Create a new plan or explore templates from other users.</p>
-            </div>
-            <div class="d-flex gap-2">
-              <a class="btn btn-primary btn-sm"href="{{ url_for('main.plan_edit') }}">+ Create Plan</a>
-              <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.templates') }}">Browse Templates</a>
             </div>
           </div>
         </div>
-      </section>
+        {% endfor %}
 
+      </div>
     </div>
   </main>
 
   <!-- Footer -->
   <footer class="py-4 border-top bg-white">
-    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <div class="text-secondary small">© 2026 Study Planner (CITS3403 Group Project)</div>
-      <div class="d-flex gap-3 small">
+    <div class="container d-flex justify-content-between">
+      <small class="text-secondary">© 2026 Study Planner</small>
+      <div class="small">
         <a class="link-secondary" href="{{ url_for('main.templates') }}">Templates</a>
-        <a class="link-secondary" href="{{ url_for('main.dashboard') }}">My Plans</a>
       </div>
     </div>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
