@@ -8,27 +8,78 @@
 
   <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <style>
+    /* ── Calendar ── */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      text-align: center;
+    }
+    .cal-grid .day-label {
+      font-size: 0.72rem;
+      color: #6c757d;
+      font-weight: 600;
+      padding: 0.2rem 0;
+    }
+    .cal-grid .cal-day {
+      font-size: 0.8rem;
+      padding: 0.3rem 0;
+      border-radius: 50%;
+      cursor: pointer;
+      color: #444;
+      line-height: 1.6;
+    }
+    .cal-grid .cal-day:hover { background: #f8f9fa; }
+    .cal-grid .cal-day.today {
+      background: #0d6efd;
+      color: #fff;
+      font-weight: 700;
+    }
+    .cal-grid .cal-day.has-event { position: relative; }
+    .cal-grid .cal-day.has-event::after {
+      content: '';
+      display: block;
+      width: 4px; height: 4px;
+      background: #ffc107;
+      border-radius: 50%;
+      margin: 1px auto 0;
+    }
+    .cal-grid .cal-day.other-month { color: #ccc; }
+
+    /* ── Timeline ── */
+    .timeline-item {
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      background: #f8f9fa;
+      margin-bottom: 0.5rem;
+      border: 1px solid #e9ecef;
+    }
+    .tl-title  { font-size: 0.85rem; font-weight: 600; color: #212529; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tl-class  { font-size: 0.75rem; color: #dc3545; font-weight: 600; }
+    .tl-time   { font-size: 0.75rem; color: #0d6efd; font-weight: 600; }
+    .tl-soon   { font-size: 0.7rem;  color: #198754; font-weight: 600; }
+  </style>
 </head>
 
 <body class="bg-light">
 
-  <!-- Navbar (logged in) -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
       <a class="navbar-brand fw-semibold" href="index.html">Study Planner</a>
-
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
         aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
-
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item"><a class="nav-link" href="templates.html">Templates</a></li>
           <li class="nav-item"><a class="nav-link active" href="dashboard.html">My Plans</a></li>
         </ul>
-
         <div class="d-flex align-items-center gap-2">
           <span class="text-white-50 small d-none d-md-inline">Logged in as</span>
           <span class="badge text-bg-secondary">jon.lew</span>
@@ -44,17 +95,11 @@
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
           <h1 class="h3 fw-bold mb-1">My Plans</h1>
-          <p class="text-secondary mb-0">
-            Create, edit, and share your study plans. Mark a plan as a template to help others.
-          </p>
+          <p class="text-secondary mb-0">Track your study plans, sessions, and progress.</p>
         </div>
         <div class="d-flex gap-2">
-          <a class="btn btn-primary" href="plan_edit.html">
-            + Create Plan
-          </a>
-          <a class="btn btn-outline-secondary" href="templates.html">
-            Browse Templates
-          </a>
+          <a class="btn btn-primary" href="plan-edit.html">+ Create Plan</a>
+          <a class="btn btn-outline-secondary" href="templates.html">Browse Templates</a>
         </div>
       </div>
     </div>
@@ -62,180 +107,206 @@
 
   <main class="pb-5">
     <div class="container">
+      <div class="row g-4">
 
-      <!-- Controls -->
-      <section class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-          <div class="row g-3 align-items-end">
-            <div class="col-md-6">
-              <label for="search" class="form-label fw-semibold">Search plans</label>
-              <input id="search" class="form-control" type="search" placeholder="e.g., CITS3403 sprint, Mid-sem revision" />
-            </div>
+        <!-- LEFT COLUMN -->
+        <div class="col-lg-8">
 
-            <div class="col-md-3">
-              <label for="status" class="form-label fw-semibold">Filter</label>
-              <select id="status" class="form-select">
-                <option selected>All</option>
-                <option>Active</option>
-                <option>Upcoming</option>
-                <option>Completed</option>
-              </select>
-            </div>
-
-            <div class="col-md-3">
-              <label for="sort" class="form-label fw-semibold">Sort by</label>
-              <select id="sort" class="form-select">
-                <option selected>Most recent</option>
-                <option>Start date</option>
-                <option>End date</option>
-                <option>Title (A–Z)</option>
-              </select>
+          <!-- Search -->
+          <div class="mb-3">
+            <div class="input-group">
+              <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-secondary"></i>
+              </span>
+              <input id="search" type="search" class="form-control border-start-0"
+                     placeholder="Search here ..." />
             </div>
           </div>
 
-          <div class="d-flex flex-wrap gap-2 mt-3">
-            <span class="badge text-bg-light border">Tip: Share your best plan as a template for others.</span>
-            <span class="badge text-bg-light border">UI mock (backend comes later).</span>
-          </div>
-        </div>
-      </section>
+          <!-- Filter tabs -->
+          <ul class="nav nav-pills mb-4 gap-1" id="filterTabs">
+            <li class="nav-item"><a class="nav-link active" href="#" data-filter="all">All</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" data-filter="active">Active</a></li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-filter="upcoming">
+                <span class="badge rounded-circle bg-warning p-1 me-1" style="font-size:.45rem;vertical-align:middle;">&nbsp;</span>Upcoming
+              </a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="#" data-filter="completed">Completed</a></li>
+          </ul>
 
-      <!-- Plans grid -->
-      <section aria-label="Plans list">
-        <div class="row g-3">
+          <!-- Plan cards -->
+          <div id="planList">
 
-          <!-- Plan card 1 -->
-          <div class="col-lg-6">
-            <article class="card h-100 border-0 shadow-sm">
+            <!-- Card 1: HTML -->
+            <article class="card border-0 shadow-sm mb-3 plan-card" data-status="active">
               <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start gap-3">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
                   <div>
-                    <h2 class="h5 fw-semibold mb-1">CITS3403 Checkpoint Sprint</h2>
-                    <p class="text-secondary small mb-2">Plan for Week 5–7 deliverables + mock UI.</p>
+                    <h2 class="h5 fw-semibold mb-1">Week 1: HTML Fundamentals</h2>
+                    <p class="text-secondary small mb-2">Structure, elements, semantic HTML and forms.</p>
                     <div class="d-flex flex-wrap gap-2">
                       <span class="badge text-bg-primary">Active</span>
-                      <span class="badge text-bg-light border">Start: 2026-03-20</span>
-                      <span class="badge text-bg-light border">End: 2026-04-03</span>
+                      <span class="badge text-bg-light border">Lecture Summary</span>
+                      <span class="badge text-bg-light border">Study Session</span>
                     </div>
                   </div>
-
-                  <!-- Share badge (signals "template" feature) -->
-                  <div class="text-end">
-                    <span class="badge text-bg-success">Shared Template</span>
-                    <div class="small text-secondary mt-1">Public</div>
-                  </div>
+                  <a href="plan-view.html" class="btn btn-warning btn-sm text-white fw-semibold flex-shrink-0"
+                     style="border-radius:20px;white-space:nowrap;">View More</a>
                 </div>
-
-                <hr class="my-3" />
-
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Sessions</div>
-                      <div class="h5 fw-bold mb-0">8</div>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Progress</div>
-                      <div class="h5 fw-bold mb-0">62%</div>
-                    </div>
-                  </div>
+                <hr class="my-2" />
+                <div class="d-flex flex-wrap gap-3 small text-secondary mb-2">
+                  <span><i class="bi bi-calendar3 me-1"></i>Due <strong class="text-dark">20 July</strong></span>
+                  <span><i class="bi bi-pencil me-1 text-warning"></i>4 sessions left</span>
                 </div>
-
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                  <a class="btn btn-outline-primary btn-sm" href="plan_view.html">View</a>
-                  <a class="btn btn-outline-secondary btn-sm" href="plan_edit.html">Edit</a>
-                  <button class="btn btn-outline-success btn-sm" type="button" disabled>
-                    Share / Unshare
-                  </button>
-                  <button class="btn btn-outline-danger btn-sm" type="button" disabled>
-                    Delete
-                  </button>
+                <div class="d-flex justify-content-between align-items-center mb-1 small">
+                  <span class="text-secondary">Progress</span>
+                  <strong>78%</strong>
                 </div>
-
-                <p class="small text-secondary mt-3 mb-0">
-                  Last updated: 2 days ago
-                </p>
+                <div class="progress" style="height:6px;">
+                  <div class="progress-bar bg-primary" style="width:78%;"></div>
+                </div>
               </div>
             </article>
-          </div>
 
-          <!-- Plan card 2 -->
-          <div class="col-lg-6">
-            <article class="card h-100 border-0 shadow-sm">
+            <!-- Card 2: CSS -->
+            <article class="card border-0 shadow-sm mb-3 plan-card" data-status="active">
               <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start gap-3">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
                   <div>
-                    <h2 class="h5 fw-semibold mb-1">Mid-Sem Exam Revision</h2>
-                    <p class="text-secondary small mb-2">Focus weak topics + timed practice papers.</p>
+                    <h2 class="h5 fw-semibold mb-1">Week 2: CSS Styling</h2>
+                    <p class="text-secondary small mb-2">Flexbox, Grid, animations and responsive design.</p>
+                    <div class="d-flex flex-wrap gap-2">
+                      <span class="badge text-bg-primary">Active</span>
+                      <span class="badge text-bg-light border">Lecture Summary</span>
+                      <span class="badge text-bg-light border">Assignment</span>
+                    </div>
+                  </div>
+                  <a href="plan-view.html" class="btn btn-warning btn-sm text-white fw-semibold flex-shrink-0"
+                     style="border-radius:20px;white-space:nowrap;">View More</a>
+                </div>
+                <hr class="my-2" />
+                <div class="d-flex flex-wrap gap-3 small text-secondary mb-2">
+                  <span><i class="bi bi-calendar3 me-1"></i>Due <strong class="text-dark">22 July</strong></span>
+                  <span><i class="bi bi-pencil me-1 text-warning"></i>6 sessions left</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-1 small">
+                  <span class="text-secondary">Progress</span>
+                  <strong>45%</strong>
+                </div>
+                <div class="progress" style="height:6px;">
+                  <div class="progress-bar bg-primary" style="width:45%;"></div>
+                </div>
+              </div>
+            </article>
+
+            <!-- Card 3: JavaScript -->
+            <article class="card border-0 shadow-sm mb-3 plan-card" data-status="upcoming">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                  <div>
+                    <h2 class="h5 fw-semibold mb-1">Week 3: JavaScript Basics</h2>
+                    <p class="text-secondary small mb-2">Variables, functions, DOM manipulation and events.</p>
                     <div class="d-flex flex-wrap gap-2">
                       <span class="badge text-bg-warning text-dark">Upcoming</span>
-                      <span class="badge text-bg-light border">Start: 2026-04-05</span>
-                      <span class="badge text-bg-light border">End: 2026-04-19</span>
+                      <span class="badge text-bg-light border">Study Session</span>
+                      <span class="badge text-bg-light border">Exam Prep</span>
                     </div>
                   </div>
-
-                  <div class="text-end">
-                    <span class="badge text-bg-secondary">Private</span>
-                    <div class="small text-secondary mt-1">Not shared</div>
-                  </div>
+                  <a href="plan-view.html" class="btn btn-warning btn-sm text-white fw-semibold flex-shrink-0"
+                     style="border-radius:20px;white-space:nowrap;">View More</a>
                 </div>
-
-                <hr class="my-3" />
-
-                <div class="row g-2">
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Sessions</div>
-                      <div class="h5 fw-bold mb-0">12</div>
-                    </div>
-                  </div>
-                  <div class="col-6">
-                    <div class="p-3 bg-light rounded-3 border">
-                      <div class="small text-secondary">Progress</div>
-                      <div class="h5 fw-bold mb-0">0%</div>
-                    </div>
-                  </div>
+                <hr class="my-2" />
+                <div class="d-flex flex-wrap gap-3 small text-secondary mb-2">
+                  <span><i class="bi bi-calendar3 me-1"></i>Due <strong class="text-dark">26 July</strong></span>
+                  <span><i class="bi bi-pencil me-1 text-warning"></i>8 sessions left</span>
                 </div>
-
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                  <a class="btn btn-outline-primary btn-sm" href="plan_view.html">View</a>
-                  <a class="btn btn-outline-secondary btn-sm" href="plan_edit.html">Edit</a>
-                  <button class="btn btn-outline-success btn-sm" type="button" disabled>
-                    Share as template
-                  </button>
-                  <button class="btn btn-outline-danger btn-sm" type="button" disabled>
-                    Delete
-                  </button>
+                <div class="d-flex justify-content-between align-items-center mb-1 small">
+                  <span class="text-secondary">Progress</span>
+                  <strong>0%</strong>
                 </div>
-
-                <p class="small text-secondary mt-3 mb-0">
-                  Last updated: today
-                </p>
+                <div class="progress" style="height:6px;">
+                  <div class="progress-bar bg-primary" style="width:0%;"></div>
+                </div>
               </div>
             </article>
+
+            <!-- Empty state -->
+            <div class="card border-0 shadow-sm d-none" id="emptyState">
+              <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                <div>
+                  <h3 class="h6 fw-bold mb-1">No plans found.</h3>
+                  <p class="text-secondary mb-0">Try a different search or create a new plan.</p>
+                </div>
+                <a class="btn btn-primary btn-sm" href="plan-edit.html">+ Create Plan</a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="col-lg-4">
+
+          <!-- Calendar -->
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h6 fw-bold mb-0" id="calMonth">April 2026</h2>
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="calPrev">
+                    <i class="bi bi-chevron-left"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="calNext">
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="cal-grid" id="calGrid"></div>
+            </div>
+          </div>
+
+          <!-- Timeline -->
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h2 class="h6 fw-bold mb-3">Timeline</h2>
+
+              <div class="timeline-item">
+                <div class="d-flex justify-content-between">
+                  <div class="tl-title">HTML Elements &amp; Semantic Tags</div>
+                  <div class="tl-time">10:00 AM</div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-1">
+                  <span class="tl-class">Week 1 · Session 5</span>
+                  <span class="tl-soon">// In Next 10 Minutes</span>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="d-flex justify-content-between">
+                  <div class="tl-title">CSS Flexbox Layout Practice</div>
+                  <div class="tl-time">11:30 AM</div>
+                </div>
+                <div class="mt-1">
+                  <span class="tl-class">Week 2 · Session 3</span>
+                </div>
+              </div>
+
+              <div class="timeline-item">
+                <div class="d-flex justify-content-between">
+                  <div class="tl-title">JavaScript DOM Manipulation</div>
+                  <div class="tl-time">3:00 PM</div>
+                </div>
+                <div class="mt-1">
+                  <span class="tl-class">Week 3 · Session 1</span>
+                </div>
+              </div>
+
+            </div>
           </div>
 
         </div>
-      </section>
-
-      <!-- Empty state (optional section to show good UX) -->
-      <section class="mt-4">
-        <div class="card border-0 shadow-sm">
-          <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-            <div>
-              <h3 class="h6 fw-bold mb-1">No more plans?</h3>
-              <p class="text-secondary mb-0">Create a new plan or explore templates from other users.</p>
-            </div>
-            <div class="d-flex gap-2">
-              <a class="btn btn-primary btn-sm" href="plan_edit.html">+ Create Plan</a>
-              <a class="btn btn-outline-secondary btn-sm" href="templates.html">Browse Templates</a>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      </div>
     </div>
   </main>
 
@@ -251,5 +322,90 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ── Calendar ──────────────────────────────────────────────────────────────
+    const MONTHS = ["January","February","March","April","May","June",
+                    "July","August","September","October","November","December"];
+    const DAYS   = ["Mo","Tu","We","Th","Fr","Sa","Su"];
+    let calYear = 2026, calMonth = 3;
+    const eventDays = [3, 8, 15, 22, 28];
+
+    function renderCalendar() {
+      document.getElementById('calMonth').textContent = MONTHS[calMonth] + ' ' + calYear;
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+      DAYS.forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'day-label';
+        el.textContent = d;
+        grid.appendChild(el);
+      });
+      const firstDay   = new Date(calYear, calMonth, 1).getDay();
+      const offset     = firstDay === 0 ? 6 : firstDay - 1;
+      const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+      const daysInMon  = new Date(calYear, calMonth + 1, 0).getDate();
+      const today      = new Date();
+
+      for (let i = offset - 1; i >= 0; i--) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.textContent = daysInPrev - i;
+        grid.appendChild(el);
+      }
+      for (let d = 1; d <= daysInMon; d++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day';
+        el.textContent = d;
+        if (d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear())
+          el.classList.add('today');
+        if (eventDays.includes(d)) el.classList.add('has-event');
+        grid.appendChild(el);
+      }
+      const rem = (offset + daysInMon) % 7;
+      if (rem) for (let d = 1; d <= 7 - rem; d++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.textContent = d;
+        grid.appendChild(el);
+      }
+    }
+
+    document.getElementById('calPrev').addEventListener('click', () => {
+      if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
+      renderCalendar();
+    });
+    document.getElementById('calNext').addEventListener('click', () => {
+      if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
+      renderCalendar();
+    });
+    renderCalendar();
+
+    // ── Search + Filter ───────────────────────────────────────────────────────
+    document.getElementById('search').addEventListener('input', applyFilters);
+
+    document.querySelectorAll('#filterTabs .nav-link').forEach(tab => {
+      tab.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelectorAll('#filterTabs .nav-link').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        applyFilters();
+      });
+    });
+
+    function applyFilters() {
+      const q      = document.getElementById('search').value.toLowerCase();
+      const active = document.querySelector('#filterTabs .nav-link.active').dataset.filter;
+      const cards  = document.querySelectorAll('.plan-card');
+      let visible  = 0;
+      cards.forEach(c => {
+        const titleMatch  = c.querySelector('h2').textContent.toLowerCase().includes(q);
+        const statusMatch = active === 'all' || c.dataset.status === active;
+        const show = titleMatch && statusMatch;
+        c.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('emptyState').classList.toggle('d-none', visible > 0);
+    }
+  </script>
 </body>
 </html>
