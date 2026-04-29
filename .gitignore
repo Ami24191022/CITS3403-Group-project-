@@ -2,3 +2,8 @@ cits3403RandomRepo/
 .venv/
 __pycache__/
 *.pyc
+
+Alishatest/
+.venv/
+__pycache__/
+*.pyc
