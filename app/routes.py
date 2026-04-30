@@ -4,45 +4,59 @@ from .models import db, User, Plan
 
 main = Blueprint("main", __name__)
 
-# --- Helper: simple login-required check (minimal version) ---
+# --- Helper ---
 def require_login():
     return "user_id" in session
 
+
+# ----------------------
+# Public pages
+# ----------------------
 @main.route("/")
 def home():
     return render_template("index.html")
 
+
+# ----------------------
+# Auth
+# ----------------------
 @main.route("/signup", methods=["GET", "POST"])
 def signup():
+    if require_login():
+        return redirect(url_for("main.dashboard"))
+
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirm = request.form.get("confirmPassword", "")
 
-        # Basic validation
         if not email or not password:
             return render_template("signup.html", error="Email and password are required.")
         if password != confirm:
             return render_template("signup.html", error="Passwords do not match.")
 
-        # Check if user exists
         existing = User.query.filter_by(email=email).first()
         if existing:
-            return render_template("signup.html", error="This email is already registered. Please log in.")
+            return render_template("signup.html", error="Email already registered.")
 
-        # Create user
-        user = User(email=email, password_hash=generate_password_hash(password))
+        user = User(
+            email=email,
+            password_hash=generate_password_hash(password, method='pbkdf2:sha256')
+        )
         db.session.add(user)
         db.session.commit()
 
-        # Log them in
         session["user_id"] = user.id
         return redirect(url_for("main.dashboard"))
 
     return render_template("signup.html")
 
+
 @main.route("/login", methods=["GET", "POST"])
 def login():
+    if require_login():
+        return redirect(url_for("main.dashboard"))
+
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
@@ -56,23 +70,29 @@ def login():
 
     return render_template("login.html")
 
+
 @main.route("/logout")
 def logout():
     session.pop("user_id", None)
     return redirect(url_for("main.home"))
 
+
+# ----------------------
+# Dashboard
+# ----------------------
 @main.route("/dashboard")
 def dashboard():
     if not require_login():
         return redirect(url_for("main.login"))
 
     user_id = session["user_id"]
-
-    # Real DB plans (not dummy)
     plans = Plan.query.filter_by(user_id=user_id).order_by(Plan.id.desc()).all()
-
     return render_template("dashboard.html", plans=plans)
 
+
+# ----------------------
+# Templates (public)
+# ----------------------
 @main.route("/templates")
 def templates():
     templates = Plan.query.filter_by(is_template=True).order_by(Plan.id.desc()).all()
@@ -101,6 +121,10 @@ def template_copy(template_id):
     db.session.commit()
     return redirect(url_for("main.dashboard"))
 
+
+# ----------------------
+# Plan CRUD
+# ----------------------
 @main.route("/plan/new", methods=["GET", "POST"])
 @main.route("/plan/<int:plan_id>/edit", methods=["GET", "POST"])
 def plan_edit(plan_id=None):
@@ -157,6 +181,6 @@ def plan_share(plan_id):
         return redirect(url_for("main.login"))
     user_id = session["user_id"]
     plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
-    plan.is_template = True
+    plan.is_template = not plan.is_template
     db.session.commit()
     return redirect(url_for("main.plan_view", plan_id=plan.id))
