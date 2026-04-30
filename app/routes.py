@@ -75,6 +75,88 @@ def dashboard():
 
 @main.route("/templates")
 def templates():
-    # Public templates (from all users)
     templates = Plan.query.filter_by(is_template=True).order_by(Plan.id.desc()).all()
     return render_template("templates.html", templates=templates)
+
+@main.route("/templates/<int:template_id>")
+def template_view(template_id):
+    template = Plan.query.get_or_404(template_id)
+    return render_template("template-view.html", template=template)
+
+@main.route("/templates/<int:template_id>/copy", methods=["POST"])
+def template_copy(template_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    original = Plan.query.get_or_404(template_id)
+    user_id = session["user_id"]
+    copy = Plan(
+        title=original.title + " (copy)",
+        description=original.description,
+        start_date=original.start_date,
+        end_date=original.end_date,
+        is_template=False,
+        user_id=user_id
+    )
+    db.session.add(copy)
+    db.session.commit()
+    return redirect(url_for("main.dashboard"))
+
+@main.route("/plan/new", methods=["GET", "POST"])
+@main.route("/plan/<int:plan_id>/edit", methods=["GET", "POST"])
+def plan_edit(plan_id=None):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = None
+    if plan_id:
+        plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    if request.method == "POST":
+        from datetime import date
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        start_str = request.form.get("start_date", "")
+        end_str = request.form.get("end_date", "")
+        start_date = date.fromisoformat(start_str) if start_str else None
+        end_date = date.fromisoformat(end_str) if end_str else None
+        if not title:
+            return render_template("plan-edit.html", plan=plan, error="Title is required.")
+        if plan:
+            plan.title = title
+            plan.description = description
+            plan.start_date = start_date
+            plan.end_date = end_date
+        else:
+            plan = Plan(title=title, description=description,
+                        start_date=start_date, end_date=end_date, user_id=user_id)
+            db.session.add(plan)
+        db.session.commit()
+        return redirect(url_for("main.plan_view", plan_id=plan.id))
+    return render_template("plan-edit.html", plan=plan)
+
+@main.route("/plan/<int:plan_id>")
+def plan_view(plan_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    return render_template("plan-view.html", plan=plan)
+
+@main.route("/plan/<int:plan_id>/delete", methods=["POST"])
+def plan_delete(plan_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    db.session.delete(plan)
+    db.session.commit()
+    return redirect(url_for("main.dashboard"))
+
+@main.route("/plan/<int:plan_id>/share", methods=["POST"])
+def plan_share(plan_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    plan.is_template = True
+    db.session.commit()
+    return redirect(url_for("main.plan_view", plan_id=plan.id))

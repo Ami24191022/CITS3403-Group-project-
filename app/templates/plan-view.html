@@ -1,222 +1,19 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Plan View — Study Planner</title>
-  <meta name="description" content="View your study plan details, sessions, and progress." />
+{% extends "base.html" %}
 
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% block title %}{{ plan.title }} — Study Planner{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
 
-  <style>
-    /* ── Session file cards ── */
-    .session-file-card {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background: #fff;
-      border: 1px solid #dee2e6;
-      border-radius: 10px;
-      padding: 1rem;
-      height: 140px;
-      cursor: pointer;
-      transition: box-shadow 0.18s, border-color 0.18s;
-      text-decoration: none;
-      color: inherit;
-    }
-    .session-file-card:hover {
-      box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-      border-color: #0d6efd;
-      color: inherit;
-    }
-    .session-file-card .file-icon {
-      font-size: 1.6rem;
-      color: #6c757d;
-    }
-    .session-file-card .file-title {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: #212529;
-    }
-    .session-file-card .file-badge {
-      font-size: 0.7rem;
-    }
-
-    /* ── Calendar (matches dashboard.html style) ── */
-    .cal-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 2px;
-      text-align: center;
-    }
-    .cal-grid .day-label {
-      font-size: 0.72rem;
-      color: #6c757d;
-      font-weight: 600;
-      padding: 0.2rem 0;
-    }
-    .cal-grid .cal-day {
-      font-size: 0.8rem;
-      padding: 0.3rem 0;
-      border-radius: 50%;
-      cursor: pointer;
-      color: #444;
-      line-height: 1.6;
-    }
-    .cal-grid .cal-day:hover { background: #f8f9fa; }
-    .cal-grid .cal-day.today {
-      background: #0d6efd;
-      color: #fff;
-      font-weight: 700;
-    }
-    .cal-grid .cal-day.has-event { position: relative; }
-    .cal-grid .cal-day.has-event::after {
-      content: '';
-      display: block;
-      width: 4px; height: 4px;
-      background: #ffc107;
-      border-radius: 50%;
-      margin: 1px auto 0;
-    }
-    .cal-grid .cal-day.other-month { color: #ccc; }
-
-    /* ── Session filter tabs (small, grey) ── */
-    #sessionTabs .nav-link {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.65rem;
-      color: #6c757d;
-      background: transparent;
-      border-radius: 20px;
-    }
-    #sessionTabs .nav-link.active {
-      background: #6c757d;
-      color: #fff;
-    }
-    #sessionTabs .nav-link:hover:not(.active) {
-      background: #e9ecef;
-      color: #495057;
-    }
-
-    /* ── Add to-do input row ── */
-    .todo-add-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding-top: 0.5rem;
-      margin-top: 0.25rem;
-      border-top: 1px solid #f0f0f0;
-    }
-    .todo-add-row input[type=text] {
-      font-size: 0.82rem;
-      border: 1px solid #dee2e6;
-      border-radius: 6px;
-      padding: 0.3rem 0.6rem;
-      flex: 1;
-      outline: none;
-    }
-    .todo-add-row input[type=text]:focus {
-      border-color: #0d6efd;
-      box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
-    }
-    .todo-add-row button {
-      font-size: 0.78rem;
-      padding: 0.3rem 0.7rem;
-      border-radius: 6px;
-    }
-
-    /* ── Upcoming session rows ── */
-    .upcoming-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.55rem 0.65rem;
-      border-radius: 8px;
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      margin-bottom: 0.5rem;
-    }
-    .upcoming-item .up-icon {
-      color: #6c757d;
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-    .upcoming-item .up-title {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #212529;
-      line-height: 1.3;
-    }
-    .upcoming-item .up-date {
-      font-size: 0.73rem;
-      color: #6c757d;
-    }
-    .upcoming-item .up-dots {
-      margin-left: auto;
-      color: #adb5bd;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    /* ── To-do list ── */
-    .todo-item {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.45rem 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-    .todo-item:last-child { border-bottom: none; }
-    .todo-item label {
-      font-size: 0.85rem;
-      cursor: pointer;
-      margin: 0;
-      flex: 1;
-    }
-    .todo-item.done label {
-      text-decoration: line-through;
-      color: #6c757d;
-    }
-    .todo-item .todo-date {
-      font-size: 0.72rem;
-      color: #adb5bd;
-      white-space: nowrap;
-    }
-  </style>
-</head>
-
-<body class="bg-light">
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand fw-semibold" href="index.html">Study Planner</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
-        aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" href="dashboard.html">My Plans</a></li>
-          <li class="nav-item"><a class="nav-link" href="templates.html">Templates</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-2">
-          <span class="text-white-50 small d-none d-md-inline">Logged in as</span>
-          <span class="badge text-bg-secondary">jon.lew</span>
-        </div>
-      </div>
-    </div>
-  </nav>
+{% block content %}
 
   <!-- Breadcrumb -->
   <div class="border-bottom bg-white">
     <div class="container py-2">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0 small">
-          <li class="breadcrumb-item"><a href="dashboard.html" class="link-secondary">My Plans</a></li>
-          <li class="breadcrumb-item active" aria-current="page">CITS3403 - Agile Web</li>
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('main.dashboard') }}" class="link-secondary">My Plans</a>
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">{{ plan.title }}</li>
         </ol>
       </nav>
     </div>
@@ -227,19 +24,34 @@
     <div class="container">
       <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
         <div>
-          <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
-            <h1 class="h3 fw-bold mb-0">CITS3403 - Agile Web</h1>
-            <span class="badge text-bg-primary">Active</span>
-            <span class="badge text-bg-light border">Lecture Summary</span>
-            <span class="badge text-bg-light border">Study Session</span>
+          <h1 class="h3 fw-bold mb-1">{{ plan.title }}</h1>
+          <p class="text-secondary mb-2">{{ plan.description or 'No description.' }}</p>
+          <div class="d-flex flex-wrap gap-2 small text-secondary">
+            {% if plan.start_date %}
+              <span><i class="bi bi-calendar3 me-1"></i>Start: <strong class="text-dark">{{ plan.start_date }}</strong></span>
+            {% endif %}
+            {% if plan.end_date %}
+              <span><i class="bi bi-calendar3 me-1"></i>Due: <strong class="text-dark">{{ plan.end_date }}</strong></span>
+            {% endif %}
+            {% if plan.is_template %}
+              <span class="badge text-bg-success">Public Template</span>
+            {% endif %}
           </div>
-          <p class="text-secondary mb-2">dynamic web applications using HTML, CSS, JavaScript, Flask/Jinja, databases, Git, and agile teamwork practices.</p>
-          <p class="text-secondary small mb-0"><i class="bi bi-calendar3 me-1"></i>Due <strong class="text-dark">20 July 2026</strong></p>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-          <a class="btn btn-outline-secondary btn-sm" href="plan-edit.html">Edit Plan</a>
-          <button class="btn btn-outline-success btn-sm" type="button" disabled>Share as Template</button>
-          <button class="btn btn-outline-danger btn-sm" type="button" disabled>Delete</button>
+          <a class="btn btn-outline-secondary btn-sm"
+             href="{{ url_for('main.plan_edit', plan_id=plan.id) }}">Edit Plan</a>
+          <form method="post" action="{{ url_for('main.plan_share', plan_id=plan.id) }}" class="d-inline">
+            <button class="btn btn-outline-success btn-sm" type="submit">
+              {% if plan.is_template %}Unshare{% else %}Share as Template{% endif %}
+            </button>
+          </form>
+          <form method="post"
+                action="{{ url_for('main.plan_delete', plan_id=plan.id) }}"
+                onsubmit="return confirm('Delete this plan? This cannot be undone.');"
+                class="d-inline">
+            <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+          </form>
         </div>
       </div>
     </div>
@@ -247,350 +59,14 @@
 
   <main class="pb-5">
     <div class="container">
-      <div class="row g-4">
-
-        <!-- LEFT COLUMN: session file cards -->
-        <div class="col-lg-8">
-
-          <!-- Session file cards grid -->
-          <h2 class="h6 fw-bold text-secondary text-uppercase mb-2">Study Sessions</h2>
-
-          <!-- Session filter tabs -->
-          <ul class="nav nav-pills mb-3 gap-1" id="sessionTabs">
-            <li class="nav-item"><a class="nav-link active py-1 px-3" href="#" data-session-filter="all">All</a></li>
-            <li class="nav-item"><a class="nav-link py-1 px-3" href="#" data-session-filter="done">Done</a></li>
-            <li class="nav-item"><a class="nav-link py-1 px-3" href="#" data-session-filter="inprogress">In Progress</a></li>
-            <li class="nav-item"><a class="nav-link py-1 px-3" href="#" data-session-filter="notstarted">Not Started</a></li>
-          </ul>
-
-          <div class="row g-3 mb-4" id="sessionGrid">
-
-            <!-- Week 1: HTML -->
-            <div class="col-sm-6 col-md-4 session-item" data-status="done">
-              <a href="plan-edit.html" class="session-file-card d-flex flex-column justify-content-between">
-                <div class="file-icon"><i class="bi bi-file-earmark-text"></i></div>
-                <div>
-                  <div class="file-title mb-1">Week 1 : HTML</div>
-                  <span class="badge text-bg-success file-badge">Done</span>
-                </div>
-              </a>
-            </div>
-
-            <!-- Week 2: CSS -->
-            <div class="col-sm-6 col-md-4 session-item" data-status="inprogress">
-              <a href="plan-edit.html" class="session-file-card d-flex flex-column justify-content-between">
-                <div class="file-icon"><i class="bi bi-file-earmark-text"></i></div>
-                <div>
-                  <div class="file-title mb-1">Week 2 : CSS</div>
-                  <span class="badge text-bg-warning text-dark file-badge">In Progress</span>
-                </div>
-              </a>
-            </div>
-
-            <!-- Week 3: JavaScript -->
-            <div class="col-sm-6 col-md-4 session-item" data-status="notstarted">
-              <a href="plan-edit.html" class="session-file-card d-flex flex-column justify-content-between">
-                <div class="file-icon"><i class="bi bi-file-earmark-text"></i></div>
-                <div>
-                  <div class="file-title mb-1">Week 3 : Java Script</div>
-                  <span class="badge text-bg-light border text-secondary file-badge">Not Started</span>
-                </div>
-              </a>
-            </div>
-
-            <!-- Add session placeholder -->
-            <div class="col-sm-6 col-md-4 session-item" data-status="all">
-              <a href="plan-edit.html" class="session-file-card d-flex flex-column align-items-center justify-content-center text-center border-dashed"
-                 style="border-style:dashed !important;background:#fafafa;color:#adb5bd;">
-                <i class="bi bi-plus-circle fs-2 mb-1"></i>
-                <div style="font-size:0.8rem;">Add Session</div>
-              </a>
-            </div>
-
-          </div>
-
-          <!-- Progress bar (below session cards) -->
-          <div class="card border-0 shadow-sm mt-3">
-            <div class="card-body py-3">
-              <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="fw-semibold small">Progress</span>
-                <span class="fw-bold text-primary">78%</span>
-              </div>
-              <div class="progress mb-3" style="height:8px;">
-                <div class="progress-bar bg-primary" style="width:78%;" role="progressbar"
-                     aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
-              </div>
-              <div class="d-flex gap-2">
-                <div class="flex-fill p-2 bg-light rounded border text-center">
-                  <div class="x-small text-secondary" style="font-size:0.7rem;">Sessions</div>
-                  <div class="fw-bold">3</div>
-                </div>
-                <div class="flex-fill p-2 bg-light rounded border text-center">
-                  <div class="x-small text-secondary" style="font-size:0.7rem;">Completed</div>
-                  <div class="fw-bold">2</div>
-                </div>
-                <div class="flex-fill p-2 bg-light rounded border text-center">
-                  <div class="x-small text-secondary" style="font-size:0.7rem;">Remaining</div>
-                  <div class="fw-bold">1</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- RIGHT COLUMN -->
-        <div class="col-lg-4">
-
-          <!-- Upcoming sessions card -->
-          <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="h6 fw-bold mb-0">Upcoming</h2>
-                <select class="form-select form-select-sm w-auto" style="font-size:0.8rem;">
-                  <option>July</option>
-                  <option selected>August</option>
-                  <option>September</option>
-                </select>
-              </div>
-
-              <!-- Calendar (dashboard style) -->
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="fw-semibold small" id="calMonthLabel">August 2026</span>
-                <div class="d-flex gap-1">
-                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="calPrev">
-                    <i class="bi bi-chevron-left"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-secondary py-0 px-2" id="calNext">
-                    <i class="bi bi-chevron-right"></i>
-                  </button>
-                </div>
-              </div>
-              <div class="cal-grid mb-3" id="calGrid"></div>
-
-              <!-- Upcoming session list -->
-              <div class="upcoming-item">
-                <i class="bi bi-clock up-icon"></i>
-                <div>
-                  <div class="up-title">HTML Elements &amp; Semantic Tags</div>
-                  <div class="up-date">16th Aug, 2026 09:30 AM</div>
-                </div>
-                <i class="bi bi-three-dots up-dots"></i>
-              </div>
-
-              <div class="upcoming-item">
-                <i class="bi bi-clock up-icon"></i>
-                <div>
-                  <div class="up-title">CSS Flexbox &amp; Grid Layout</div>
-                  <div class="up-date">18th Aug, 2026 09:30 AM</div>
-                </div>
-                <i class="bi bi-three-dots up-dots"></i>
-              </div>
-
-              <div class="upcoming-item">
-                <i class="bi bi-clock up-icon"></i>
-                <div>
-                  <div class="up-title">JavaScript DOM Manipulation</div>
-                  <div class="up-date">20th Aug, 2026 09:30 AM</div>
-                </div>
-                <i class="bi bi-three-dots up-dots"></i>
-              </div>
-
-            </div>
-          </div>
-
-          <!-- To-do list card -->
-          <div class="card border-0 shadow-sm">
-            <div class="card-body">
-              <h2 class="h6 fw-bold mb-3">To do List</h2>
-
-              <div id="todoList">
-                <div class="todo-item">
-                  <input class="form-check-input mt-0" type="checkbox" id="chk1">
-                  <label for="chk1" class="flex-grow-1">Review HTML notes</label>
-                  <span class="todo-date">30 Jun 2026</span>
-                  <button class="btn btn-sm p-0 ms-1 text-secondary border-0 todo-delete" title="Remove"><i class="bi bi-x"></i></button>
-                </div>
-                <div class="todo-item">
-                  <input class="form-check-input mt-0" type="checkbox" id="chk2">
-                  <label for="chk2" class="flex-grow-1">Complete CSS practice</label>
-                  <span class="todo-date">24 Jun 2026</span>
-                  <button class="btn btn-sm p-0 ms-1 text-secondary border-0 todo-delete" title="Remove"><i class="bi bi-x"></i></button>
-                </div>
-                <div class="todo-item done">
-                  <input class="form-check-input mt-0" type="checkbox" id="chk3" checked>
-                  <label for="chk3" class="flex-grow-1">Watch JavaScript lecture</label>
-                  <span class="todo-date">10 Jun 2026</span>
-                  <button class="btn btn-sm p-0 ms-1 text-secondary border-0 todo-delete" title="Remove"><i class="bi bi-x"></i></button>
-                </div>
-                <div class="todo-item done">
-                  <input class="form-check-input mt-0" type="checkbox" id="chk4" checked>
-                  <label for="chk4" class="flex-grow-1">Submit weekly reflection</label>
-                  <span class="todo-date">04 Jun 2026</span>
-                  <button class="btn btn-sm p-0 ms-1 text-secondary border-0 todo-delete" title="Remove"><i class="bi bi-x"></i></button>
-                </div>
-                <div class="todo-item">
-                  <input class="form-check-input mt-0" type="checkbox" id="chk5">
-                  <label for="chk5" class="flex-grow-1">Revise Flexbox exercises</label>
-                  <span class="todo-date">1 Jul 2026</span>
-                  <button class="btn btn-sm p-0 ms-1 text-secondary border-0 todo-delete" title="Remove"><i class="bi bi-x"></i></button>
-                </div>
-              </div>
-
-              <!-- Add new to-do -->
-              <div class="todo-add-row">
-                <input type="text" id="todoInput" placeholder="Add a new task..." />
-                <button class="btn btn-primary btn-sm" id="todoAddBtn">Add</button>
-              </div>
-
-            </div>
-          </div>
-
+      <div class="card border-0 shadow-sm">
+        <div class="card-body py-4 text-center text-secondary">
+          <i class="bi bi-journal-text fs-1 mb-3 d-block"></i>
+          <p class="mb-1">Sessions and progress tracking coming soon.</p>
+          <a href="{{ url_for('main.plan_edit', plan_id=plan.id) }}" class="btn btn-primary btn-sm mt-2">Edit this plan</a>
         </div>
       </div>
-
-
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer class="py-4 border-top bg-white">
-    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <div class="text-secondary small">© 2026 Study Planner (CITS3403 Group Project)</div>
-      <div class="d-flex gap-3 small">
-        <a class="link-secondary" href="templates.html">Templates</a>
-        <a class="link-secondary" href="dashboard.html">My Plans</a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // ── Mini Calendar (dashboard style) ──────────────────────────────────────
-    const MONTHS = ["January","February","March","April","May","June",
-                    "July","August","September","October","November","December"];
-    const DAYS   = ["Mo","Tu","We","Th","Fr","Sa","Su"];
-
-    const EVENT_DAYS = new Set([
-      '2026-08-16','2026-08-18','2026-08-20','2026-08-09'
-    ]);
-
-    let calYear = 2026, calMonth = 7; // August
-
-    function pad(n) { return String(n).padStart(2,'0'); }
-
-    function renderCalendar() {
-      document.getElementById('calMonthLabel').textContent = MONTHS[calMonth] + ' ' + calYear;
-      const grid = document.getElementById('calGrid');
-      grid.innerHTML = '';
-
-      DAYS.forEach(d => {
-        const el = document.createElement('div');
-        el.className = 'day-label';
-        el.textContent = d;
-        grid.appendChild(el);
-      });
-
-      const firstDay  = new Date(calYear, calMonth, 1).getDay();
-      const offset    = firstDay === 0 ? 6 : firstDay - 1;
-      const prevDays  = new Date(calYear, calMonth, 0).getDate();
-      const monDays   = new Date(calYear, calMonth + 1, 0).getDate();
-      const today     = new Date();
-
-      for (let i = offset - 1; i >= 0; i--) {
-        const el = document.createElement('div');
-        el.className = 'cal-day other-month';
-        el.textContent = prevDays - i;
-        grid.appendChild(el);
-      }
-      for (let d = 1; d <= monDays; d++) {
-        const key = `${calYear}-${pad(calMonth+1)}-${pad(d)}`;
-        const el = document.createElement('div');
-        el.className = 'cal-day';
-        el.textContent = d;
-        if (d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear())
-          el.classList.add('today');
-        if (EVENT_DAYS.has(key)) el.classList.add('has-event');
-        grid.appendChild(el);
-      }
-      const rem = (offset + monDays) % 7;
-      if (rem) for (let d = 1; d <= 7 - rem; d++) {
-        const el = document.createElement('div');
-        el.className = 'cal-day other-month';
-        el.textContent = d;
-        grid.appendChild(el);
-      }
-    }
-
-    document.getElementById('calPrev').addEventListener('click', () => {
-      if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
-      renderCalendar();
-    });
-    document.getElementById('calNext').addEventListener('click', () => {
-      if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
-      renderCalendar();
-    });
-    renderCalendar();
-
-    // ── Session filter tabs ───────────────────────────────────────────────────
-    document.querySelectorAll('#sessionTabs .nav-link').forEach(tab => {
-      tab.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelectorAll('#sessionTabs .nav-link').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        const filter = this.dataset.sessionFilter;
-        document.querySelectorAll('.session-item').forEach(item => {
-          const status = item.dataset.status;
-          item.style.display = (filter === 'all' || status === filter || status === 'all') ? '' : 'none';
-        });
-      });
-    });
-
-    // ── To-do list (dynamic) ──────────────────────────────────────────────────
-    let todoCounter = 10;
-
-    function bindTodoItem(item) {
-      // Checkbox toggle
-      item.querySelector('input[type=checkbox]').addEventListener('change', function () {
-        item.classList.toggle('done', this.checked);
-      });
-      // Delete button
-      item.querySelector('.todo-delete').addEventListener('click', function () {
-        item.remove();
-      });
-    }
-
-    // Bind existing items
-    document.querySelectorAll('.todo-item').forEach(bindTodoItem);
-
-    function addTodo() {
-      const input = document.getElementById('todoInput');
-      const text = input.value.trim();
-      if (!text) return;
-
-      todoCounter++;
-      const id = 'chk' + todoCounter;
-      const today = new Date();
-      const dateStr = today.getDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][today.getMonth()] + ' ' + today.getFullYear();
-
-      const div = document.createElement('div');
-      div.className = 'todo-item';
-      div.innerHTML = `
-        <input class="form-check-input mt-0" type="checkbox" id="${id}">
-        <label for="${id}" class="flex-grow-1">${text}</label>
-        <span class="todo-date">${dateStr}</span>
-        <button class="btn btn-sm p-0 ms-1 text-secondary border-0 todo-delete" title="Remove"><i class="bi bi-x"></i></button>
-      `;
-      document.getElementById('todoList').appendChild(div);
-      bindTodoItem(div);
-      input.value = '';
-      input.focus();
-    }
-
-    document.getElementById('todoAddBtn').addEventListener('click', addTodo);
-    document.getElementById('todoInput').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') addTodo();
-    });
-  </script>
-</body>
-</html>
+{% endblock %}

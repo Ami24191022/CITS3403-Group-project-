@@ -1,569 +1,88 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Edit Session — Study Planner</title>
-  <meta name="description" content="Edit your study session details." />
+{% extends "base.html" %}
 
-  <!-- Bootstrap 5 -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% block title %}{% if plan %}Edit Plan{% else %}New Plan{% endif %}{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
 
-  <style>
-    /* ── Notion-style editor panel ── */
-    .notion-panel {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.07);
-      padding: 2.5rem 2.75rem 2rem;
-      max-width: 780px;
-      margin: 0 auto;
-    }
-
-    /* ── Large editable title ── */
-    .notion-title {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #111;
-      border: none;
-      outline: none;
-      width: 100%;
-      background: transparent;
-      padding: 0;
-      margin-bottom: 1.4rem;
-      line-height: 1.2;
-    }
-    .notion-title::placeholder { color: #ccc; }
-
-    /* ── Property rows ── */
-    .prop-row {
-      display: flex;
-      align-items: flex-start;
-      padding: 0.45rem 0;
-      border-bottom: 1px solid #f0f0f0;
-      gap: 0.75rem;
-    }
-    .prop-row:last-of-type { border-bottom: none; }
-    .prop-label {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      min-width: 140px;
-      color: #8a8f9d;
-      font-size: 0.85rem;
-      font-weight: 500;
-      padding-top: 0.3rem;
-    }
-    .prop-label i { font-size: 0.85rem; }
-    .prop-value {
-      flex: 1;
-      font-size: 0.875rem;
-      color: #111;
-    }
-    .prop-value input,
-    .prop-value select,
-    .prop-value textarea {
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 0.875rem;
-      font-family: inherit;
-      color: #111;
-      width: 100%;
-      padding: 0.2rem 0.4rem;
-      border-radius: 4px;
-      transition: background 0.15s;
-    }
-    .prop-value input:hover,
-    .prop-value select:hover,
-    .prop-value textarea:hover,
-    .prop-value input:focus,
-    .prop-value select:focus,
-    .prop-value textarea:focus {
-      background: #f7f7f7;
-    }
-    .prop-value textarea { resize: vertical; min-height: 36px; }
-
-    /* ── Type badge select ── */
-    .type-badge {
-      display: inline-block;
-      padding: 0.2rem 0.65rem;
-      border-radius: 4px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      font-family: inherit;
-    }
-    .type-badge.lecture  { background: #fef3c7; color: #92400e; }
-    .type-badge.workshop { background: #dbeafe; color: #1e40af; }
-    .type-badge.revision { background: #d1fae5; color: #065f46; }
-    .type-badge.assignment { background: #fce7f3; color: #9d174d; }
-
-    /* ── Progress range ── */
-    .progress-row { display: flex; align-items: center; gap: 0.75rem; }
-    .progress-row input[type=range] { flex: 1; }
-    .progress-row .pct-label { min-width: 38px; font-size: 0.82rem; font-weight: 600; color: #444; }
-
-    /* ── Add property button ── */
-    .add-prop-btn {
-      color: #adb5bd;
-      font-size: 0.82rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.35rem 0.4rem;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: color 0.15s, background 0.15s;
-    }
-    .add-prop-btn:hover { color: #495057; background: #f7f7f7; }
-
-    /* ── Divider ── */
-    .notion-divider {
-      border: none;
-      border-top: 1px solid #f0f0f0;
-      margin: 1.5rem 0;
-    }
-
-    /* ── Notes / content area ── */
-    .notion-content {
-      font-size: 0.9rem;
-      color: #333;
-      border: none;
-      outline: none;
-      width: 100%;
-      background: transparent;
-      resize: none;
-      min-height: 140px;
-      font-family: inherit;
-      line-height: 1.7;
-      padding: 0;
-    }
-    .notion-content::placeholder { color: #ccc; }
-
-    /* ── Checklist ── */
-    .checklist-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.25rem 0;
-    }
-    .checklist-item input[type=checkbox] { flex-shrink: 0; }
-    .checklist-item input[type=text] {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 0.875rem;
-      color: #333;
-      font-family: inherit;
-    }
-    .checklist-item input[type=text]::placeholder { color: #ccc; }
-    .checklist-item.done input[type=text] {
-      text-decoration: line-through;
-      color: #adb5bd;
-    }
-    .checklist-item .del-check {
-      color: #ccc;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 0.85rem;
-      padding: 0;
-      line-height: 1;
-    }
-    .checklist-item .del-check:hover { color: #dc3545; }
-
-    /* ── Comments ── */
-    .comment-area {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.6rem;
-      padding-top: 0.5rem;
-    }
-    .comment-avatar {
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      background: #6c757d;
-      color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.72rem;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .comment-input {
-      flex: 1;
-      border: none;
-      outline: none;
-      background: transparent;
-      font-size: 0.85rem;
-      font-family: inherit;
-      color: #555;
-    }
-    .comment-input::placeholder { color: #ccc; }
-
-    /* ── Sticky save bar ── */
-    .save-bar {
-      position: sticky;
-      bottom: 0;
-      background: #fff;
-      border-top: 1px solid #dee2e6;
-      padding: 0.75rem 0;
-      z-index: 50;
-    }
-
-    /* ── File upload zone ── */
-    .file-zone {
-      border: 1.5px dashed #dee2e6;
-      border-radius: 6px;
-      padding: 0.5rem 0.75rem;
-      font-size: 0.8rem;
-      color: #adb5bd;
-      cursor: pointer;
-      transition: border-color 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-    .file-zone:hover { border-color: #0d6efd; color: #0d6efd; }
-  </style>
-</head>
-
-<body class="bg-light">
-
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand fw-semibold" href="index.html">Study Planner</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
-        aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="nav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" href="dashboard.html">My Plans</a></li>
-          <li class="nav-item"><a class="nav-link" href="templates.html">Templates</a></li>
-        </ul>
-        <div class="d-flex align-items-center gap-2">
-          <span class="text-white-50 small d-none d-md-inline">Logged in as</span>
-          <span class="badge text-bg-secondary">jon.lew</span>
-        </div>
-      </div>
-    </div>
-  </nav>
+{% block content %}
 
   <!-- Breadcrumb -->
   <div class="border-bottom bg-white">
     <div class="container py-2">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb mb-0 small">
-          <li class="breadcrumb-item"><a href="dashboard.html" class="link-secondary">My Plans</a></li>
-          <li class="breadcrumb-item"><a href="plan-view.html" class="link-secondary">CITS3403 - Agile Web</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Week 1 : HTML</li>
+          <li class="breadcrumb-item">
+            <a href="{{ url_for('main.dashboard') }}" class="link-secondary">My Plans</a>
+          </li>
+          {% if plan %}
+            <li class="breadcrumb-item">
+              <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="link-secondary">{{ plan.title }}</a>
+            </li>
+            <li class="breadcrumb-item active">Edit</li>
+          {% else %}
+            <li class="breadcrumb-item active">New Plan</li>
+          {% endif %}
         </ol>
       </nav>
     </div>
   </div>
 
   <main class="py-4 pb-5">
-    <div class="container">
+    <div class="container" style="max-width:700px;">
 
-      <!-- Top action bar -->
-      <div class="d-flex justify-content-between align-items-center mb-3" style="max-width:780px;margin:0 auto;">
-        <a href="plan-view.html" class="btn btn-outline-secondary btn-sm">
-          <i class="bi bi-arrow-left me-1"></i>Back to Plan
-        </a>
-        <div class="d-flex gap-2">
-          <button class="btn btn-outline-danger btn-sm" type="button" onclick="deletePage()">
-            <i class="bi bi-trash me-1"></i>Delete
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <form method="post"
+            action="{{ url_for('main.plan_edit', plan_id=plan.id) if plan else url_for('main.plan_edit') }}">
+
+        <div class="card border-0 shadow-sm">
+          <div class="card-body p-4">
+
+            <h2 class="h5 fw-bold mb-4">{% if plan %}Edit Plan{% else %}New Plan{% endif %}</h2>
+
+            <div class="mb-3">
+              <label for="title" class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
+              <input id="title" name="title" type="text" class="form-control"
+                     value="{{ plan.title if plan else '' }}"
+                     placeholder="e.g. CITS3403 Exam Sprint" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label fw-semibold">Description</label>
+              <textarea id="description" name="description" class="form-control" rows="3"
+                        placeholder="What is this plan about?">{{ plan.description if plan else '' }}</textarea>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="start_date" class="form-label fw-semibold">Start Date</label>
+                <input id="start_date" name="start_date" type="date" class="form-control"
+                       value="{{ plan.start_date if plan else '' }}">
+              </div>
+              <div class="col-md-6">
+                <label for="end_date" class="form-label fw-semibold">Due Date</label>
+                <input id="end_date" name="end_date" type="date" class="form-control"
+                       value="{{ plan.end_date if plan else '' }}">
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-3 justify-content-end">
+          {% if plan %}
+            <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary">Cancel</a>
+          {% else %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+          {% endif %}
+          <button type="submit" class="btn btn-primary">
+            {% if plan %}Save Changes{% else %}Create Plan{% endif %}
           </button>
-          <a href="plan-view.html" class="btn btn-outline-secondary btn-sm">Cancel</a>
-          <button class="btn btn-primary btn-sm" type="button" onclick="saveChanges(this)">Save</button>
-        </div>
-      </div>
-
-      <!-- Notion-style editor panel -->
-      <div class="notion-panel">
-
-        <!-- Large title -->
-        <input class="notion-title" type="text" id="pageTitle" value="Week 1 : HTML"
-               placeholder="Untitled" />
-
-        <!-- Properties table -->
-        <div id="propertiesBlock">
-
-          <div class="prop-row">
-            <div class="prop-label"><i class="bi bi-tag"></i> Type</div>
-            <div class="prop-value">
-              <select class="type-badge lecture" id="typeSelect" onchange="updateTypeBadge(this)">
-                <option value="lecture" selected>Lecture Summary</option>
-                <option value="workshop">Workshop</option>
-                <option value="revision">Revision</option>
-                <option value="assignment">Assignment</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="prop-row">
-            <div class="prop-label"><i class="bi bi-text-left"></i> Description</div>
-            <div class="prop-value">
-              <textarea id="propDesc" rows="2" placeholder="Empty">Introduction to HTML structure, elements, and semantic markup.</textarea>
-            </div>
-          </div>
-
-          <div class="prop-row">
-            <div class="prop-label"><i class="bi bi-hash"></i> End date</div>
-            <div class="prop-value">
-              <input type="date" id="propEndDate" value="2026-07-20" />
-            </div>
-          </div>
-
-          <div class="prop-row">
-            <div class="prop-label"><i class="bi bi-graph-up"></i> Progress</div>
-            <div class="prop-value">
-              <div class="progress-row">
-                <input type="range" min="0" max="100" step="5" value="78" id="progressSlider"
-                       oninput="updateProgress(this.value)" />
-                <span class="pct-label" id="pctLabel">78%</span>
-              </div>
-              <div class="progress mt-1" style="height:5px;">
-                <div class="progress-bar bg-primary" id="pctBar" style="width:78%;"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="prop-row" id="filesRow">
-            <div class="prop-label"><i class="bi bi-paperclip"></i> Files &amp; media</div>
-            <div class="prop-value">
-              <label class="file-zone" for="fileInput">
-                <i class="bi bi-upload"></i> Upload a file
-              </label>
-              <input type="file" id="fileInput" class="d-none" multiple onchange="showFiles(this)" />
-              <div id="fileList" class="mt-1"></div>
-            </div>
-          </div>
-
-          <!-- Extra properties added dynamically here -->
-          <div id="extraProps"></div>
-
-          <!-- Add a property -->
-          <div class="prop-row" style="border-bottom:none;">
-            <button class="add-prop-btn" onclick="addProperty()">
-              <i class="bi bi-plus"></i> Add a property
-            </button>
-          </div>
-
         </div>
 
-        <hr class="notion-divider" />
-
-        <!-- Notes / content body -->
-        <div class="mb-1 text-secondary small fw-semibold" style="letter-spacing:0.04em;">NOTES</div>
-        <textarea class="notion-content" id="notesContent"
-                  placeholder="Start writing your study notes here…">HTML (HyperText Markup Language) is the standard markup language for creating web pages.
-
-Key concepts:
-- Elements and tags
-- Semantic HTML (header, main, footer, article, section)
-- Forms and inputs
-- Links and images
-- Tables and lists</textarea>
-
-        <hr class="notion-divider" />
-
-        <!-- Checklist -->
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <div class="text-secondary small fw-semibold" style="letter-spacing:0.04em;">CHECKLIST</div>
-          <button class="add-prop-btn" onclick="addCheckItem()"><i class="bi bi-plus"></i> Add item</button>
-        </div>
-        <div id="checklistItems">
-          <div class="checklist-item">
-            <input type="checkbox" class="form-check-input mt-0" checked onchange="toggleCheck(this)">
-            <input type="text" value="Read lecture slides" />
-            <button class="del-check" onclick="removeCheckItem(this)"><i class="bi bi-x"></i></button>
-          </div>
-          <div class="checklist-item">
-            <input type="checkbox" class="form-check-input mt-0" checked onchange="toggleCheck(this)">
-            <input type="text" value="Watch recorded lecture" />
-            <button class="del-check" onclick="removeCheckItem(this)"><i class="bi bi-x"></i></button>
-          </div>
-          <div class="checklist-item">
-            <input type="checkbox" class="form-check-input mt-0" onchange="toggleCheck(this)">
-            <input type="text" value="Complete HTML practice exercise" />
-            <button class="del-check" onclick="removeCheckItem(this)"><i class="bi bi-x"></i></button>
-          </div>
-          <div class="checklist-item">
-            <input type="checkbox" class="form-check-input mt-0" onchange="toggleCheck(this)">
-            <input type="text" value="Submit week 1 reflection" />
-            <button class="del-check" onclick="removeCheckItem(this)"><i class="bi bi-x"></i></button>
-          </div>
-        </div>
-
-        <!-- Init checked state -->
-        <script>
-          document.querySelectorAll('.checklist-item').forEach(item => {
-            if (item.querySelector('input[type=checkbox]').checked)
-              item.classList.add('done');
-          });
-        </script>
-
-        <hr class="notion-divider" />
-
-        <!-- Comments -->
-        <div class="text-secondary small fw-semibold mb-2" style="letter-spacing:0.04em;">COMMENTS</div>
-        <div class="comment-area">
-          <div class="comment-avatar">JL</div>
-          <input class="comment-input" type="text" id="commentInput" placeholder="Add a comment…" />
-          <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="postComment()">Post</button>
-        </div>
-        <div id="commentsList" class="mt-2"></div>
-
-      </div>
+      </form>
     </div>
   </main>
 
-  <!-- Sticky save bar -->
-  <div class="save-bar">
-    <div class="container d-flex justify-content-between align-items-center gap-3" style="max-width:780px;padding-left:calc(var(--bs-gutter-x)*.5);padding-right:calc(var(--bs-gutter-x)*.5);">
-      <span class="small text-secondary" id="saveStatus">Unsaved changes</span>
-      <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary btn-sm" href="plan-view.html">Cancel</a>
-        <button class="btn btn-primary btn-sm" type="button" onclick="saveChanges(this)">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Footer -->
-  <footer class="py-4 border-top bg-white">
-    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <div class="text-secondary small">© 2026 Study Planner (CITS3403 Group Project)</div>
-      <div class="d-flex gap-3 small">
-        <a class="link-secondary" href="templates.html">Templates</a>
-        <a class="link-secondary" href="dashboard.html">My Plans</a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    // ── Type badge colour ──────────────────────────────────────────────────────
-    function updateTypeBadge(sel) {
-      sel.className = 'type-badge ' + sel.value;
-    }
-
-    // ── Progress ──────────────────────────────────────────────────────────────
-    function updateProgress(val) {
-      document.getElementById('pctLabel').textContent = val + '%';
-      document.getElementById('pctBar').style.width   = val + '%';
-    }
-
-    // ── File upload display ───────────────────────────────────────────────────
-    function showFiles(input) {
-      const list = document.getElementById('fileList');
-      list.innerHTML = '';
-      Array.from(input.files).forEach(f => {
-        const el = document.createElement('div');
-        el.className = 'small text-secondary mt-1';
-        el.innerHTML = `<i class="bi bi-file-earmark me-1"></i>${f.name}`;
-        list.appendChild(el);
-      });
-    }
-
-    // ── Add property ──────────────────────────────────────────────────────────
-    let propCount = 0;
-    function addProperty() {
-      propCount++;
-      const id  = 'extraProp' + propCount;
-      const row = document.createElement('div');
-      row.className = 'prop-row';
-      row.id = id;
-      row.innerHTML = `
-        <div class="prop-label">
-          <input type="text" style="border:none;outline:none;background:transparent;font-size:0.85rem;color:#8a8f9d;font-family:inherit;width:120px;" placeholder="Property name" />
-        </div>
-        <div class="prop-value d-flex align-items-center gap-2">
-          <input type="text" placeholder="Empty" />
-          <button class="del-check" onclick="document.getElementById('${id}').remove()"><i class="bi bi-x"></i></button>
-        </div>`;
-      document.getElementById('extraProps').appendChild(row);
-      row.querySelector('.prop-label input').focus();
-    }
-
-    // ── Checklist ─────────────────────────────────────────────────────────────
-    function toggleCheck(chk) {
-      chk.closest('.checklist-item').classList.toggle('done', chk.checked);
-    }
-
-    function removeCheckItem(btn) {
-      btn.closest('.checklist-item').remove();
-    }
-
-    function addCheckItem() {
-      const div = document.createElement('div');
-      div.className = 'checklist-item';
-      div.innerHTML = `
-        <input type="checkbox" class="form-check-input mt-0" onchange="toggleCheck(this)">
-        <input type="text" placeholder="New item…" />
-        <button class="del-check" onclick="removeCheckItem(this)"><i class="bi bi-x"></i></button>`;
-      document.getElementById('checklistItems').appendChild(div);
-      div.querySelector('input[type=text]').focus();
-    }
-
-    // ── Comments ──────────────────────────────────────────────────────────────
-    function postComment() {
-      const input = document.getElementById('commentInput');
-      const text  = input.value.trim();
-      if (!text) return;
-      const now   = new Date().toLocaleTimeString('en-AU', { hour:'2-digit', minute:'2-digit' });
-      const el    = document.createElement('div');
-      el.className = 'comment-area mb-1';
-      el.innerHTML = `
-        <div class="comment-avatar">JL</div>
-        <div>
-          <span class="small fw-semibold">jon.lew</span>
-          <span class="text-secondary small ms-1">${now}</span>
-          <div class="small">${text}</div>
-        </div>`;
-      document.getElementById('commentsList').appendChild(el);
-      input.value = '';
-    }
-    document.getElementById('commentInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') postComment();
-    });
-
-    // ── Delete ────────────────────────────────────────────────────────────────
-    function deletePage() {
-      if (confirm('Delete this session? This cannot be undone.')) {
-        window.location.href = 'plan-view.html';
-      }
-    }
-
-    // ── Save ──────────────────────────────────────────────────────────────────
-    function saveChanges(btn) {
-      const btns = document.querySelectorAll('[onclick="saveChanges(this)"]');
-      btns.forEach(b => { b.textContent = 'Saving…'; b.disabled = true; });
-      document.getElementById('saveStatus').textContent = 'Saving…';
-      setTimeout(() => {
-        btns.forEach(b => {
-          b.textContent = '✓ Saved';
-          b.classList.replace('btn-primary','btn-success');
-        });
-        document.getElementById('saveStatus').textContent = 'All changes saved';
-        setTimeout(() => {
-          btns.forEach(b => {
-            b.textContent = 'Save';
-            b.classList.replace('btn-success','btn-primary');
-            b.disabled = false;
-          });
-          document.getElementById('saveStatus').textContent = 'Unsaved changes';
-        }, 2000);
-      }, 700);
-    }
-  </script>
-</body>
-</html>
+{% endblock %}
