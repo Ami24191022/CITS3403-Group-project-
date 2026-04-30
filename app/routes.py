@@ -22,7 +22,6 @@ def home():
 # ----------------------
 @main.route("/signup", methods=["GET", "POST"])
 def signup():
-    # Block if already logged in
     if require_login():
         return redirect(url_for("main.dashboard"))
 
@@ -40,7 +39,12 @@ def signup():
         if existing:
             return render_template("signup.html", error="Email already registered.")
 
-        user = User(email=email, password_hash=generate_password_hash(password))
+        # （scrypt → pbkdf2）
+        user = User(
+            email=email,
+            password_hash=generate_password_hash(password, method='pbkdf2:sha256')
+        )
+
         db.session.add(user)
         db.session.commit()
 
@@ -52,7 +56,6 @@ def signup():
 
 @main.route("/login", methods=["GET", "POST"])
 def login():
-    # Block if already logged in
     if require_login():
         return redirect(url_for("main.dashboard"))
 
@@ -100,7 +103,7 @@ def templates():
 
 
 # ----------------------
-# PLAN CRUD (YOUR TASK)
+# PLAN CRUD
 # ----------------------
 
 # CREATE
@@ -131,7 +134,7 @@ def new_plan():
     return render_template("plan-edit.html")
 
 
-# READ (view one plan)
+# READ
 @main.route("/plans/<int:plan_id>")
 def view_plan(plan_id):
     if not require_login():
@@ -139,7 +142,6 @@ def view_plan(plan_id):
 
     plan = Plan.query.get_or_404(plan_id)
 
-    # Security check
     if plan.user_id != session["user_id"]:
         return redirect(url_for("main.dashboard"))
 
