@@ -246,8 +246,8 @@
       </button>
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link active" href="dashboard.html">My Plans</a></li>
-          <li class="nav-item"><a class="nav-link" href="templates.html">Templates</a></li>
+          <li class="nav-item"><a class="nav-link active" href="{{ url_for('main.dashboard') }}">My Plans</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.templates') }}">Templates</a></li>
         </ul>
         <div class="d-flex align-items-center gap-2">
           <span class="text-white-50 small d-none d-md-inline">Logged in as</span>
@@ -275,14 +275,14 @@
 
       <!-- Top action bar -->
       <div class="d-flex justify-content-between align-items-center mb-3" style="max-width:780px;margin:0 auto;">
-        <a href="plan-view.html" class="btn btn-outline-secondary btn-sm">
+        <a href="{{ url_for('main.plan-view') }}" class="btn btn-outline-secondary btn-sm">
           <i class="bi bi-arrow-left me-1"></i>Back to Plan
         </a>
         <div class="d-flex gap-2">
           <button class="btn btn-outline-danger btn-sm" type="button" onclick="deletePage()">
             <i class="bi bi-trash me-1"></i>Delete
           </button>
-          <a href="plan-view.html" class="btn btn-outline-secondary btn-sm">Cancel</a>
+          <a href="{{ url_for('main.plan-view') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
           <button class="btn btn-primary btn-sm" type="button" onclick="saveChanges(this)">Save</button>
         </div>
       </div>
@@ -443,8 +443,8 @@ Key concepts:
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
       <div class="text-secondary small">© 2026 Study Planner (CITS3403 Group Project)</div>
       <div class="d-flex gap-3 small">
-        <a class="link-secondary" href="templates.html">Templates</a>
-        <a class="link-secondary" href="dashboard.html">My Plans</a>
+        <a class="link-secondary" href="{{ url_for('main.templates') }}">Templates</a>
+        <a class="link-secondary" href="{{ url_for('main.dashboard') }}">My Plans</a>
       </div>
     </div>
   </footer>
