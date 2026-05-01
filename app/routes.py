@@ -39,12 +39,10 @@ def signup():
         if existing:
             return render_template("signup.html", error="Email already registered.")
 
-        # （scrypt → pbkdf2）
         user = User(
             email=email,
             password_hash=generate_password_hash(password, method='pbkdf2:sha256')
         )
-
         db.session.add(user)
         db.session.commit()
 
@@ -89,7 +87,6 @@ def dashboard():
 
     user_id = session["user_id"]
     plans = Plan.query.filter_by(user_id=user_id).order_by(Plan.id.desc()).all()
-
     return render_template("dashboard.html", plans=plans)
 
 
@@ -101,86 +98,89 @@ def templates():
     templates = Plan.query.filter_by(is_template=True).order_by(Plan.id.desc()).all()
     return render_template("templates.html", templates=templates)
 
+@main.route("/templates/<int:template_id>")
+def template_view(template_id):
+    template = Plan.query.get_or_404(template_id)
+    return render_template("template-view.html", template=template)
 
-# ----------------------
-# PLAN CRUD
-# ----------------------
-
-# CREATE
-@main.route("/plans/new", methods=["GET", "POST"])
-def new_plan():
+@main.route("/templates/<int:template_id>/copy", methods=["POST"])
+def template_copy(template_id):
     if not require_login():
         return redirect(url_for("main.login"))
+    original = Plan.query.get_or_404(template_id)
+    user_id = session["user_id"]
+    copy = Plan(
+        title=original.title + " (copy)",
+        description=original.description,
+        start_date=original.start_date,
+        end_date=original.end_date,
+        is_template=False,
+        user_id=user_id
+    )
+    db.session.add(copy)
+    db.session.commit()
+    return redirect(url_for("main.dashboard"))
 
+
+# ----------------------
+# Plan CRUD
+# ----------------------
+@main.route("/plan/new", methods=["GET", "POST"])
+@main.route("/plan/<int:plan_id>/edit", methods=["GET", "POST"])
+def plan_edit(plan_id=None):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = None
+    if plan_id:
+        plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
     if request.method == "POST":
-        title = request.form.get("title")
-        description = request.form.get("description")
-
+        from datetime import date
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        start_str = request.form.get("start_date", "")
+        end_str = request.form.get("end_date", "")
+        start_date = date.fromisoformat(start_str) if start_str else None
+        end_date = date.fromisoformat(end_str) if end_str else None
         if not title:
-            return render_template("plan-edit.html", error="Title is required.")
-
-        plan = Plan(
-            title=title,
-            description=description,
-            user_id=session["user_id"],
-            is_template=False
-        )
-
-        db.session.add(plan)
+            return render_template("plan-edit.html", plan=plan, error="Title is required.")
+        if plan:
+            plan.title = title
+            plan.description = description
+            plan.start_date = start_date
+            plan.end_date = end_date
+        else:
+            plan = Plan(title=title, description=description,
+                        start_date=start_date, end_date=end_date, user_id=user_id)
+            db.session.add(plan)
         db.session.commit()
-
-        return redirect(url_for("main.dashboard"))
-
-    return render_template("plan-edit.html")
-
-
-# READ
-@main.route("/plans/<int:plan_id>")
-def view_plan(plan_id):
-    if not require_login():
-        return redirect(url_for("main.login"))
-
-    plan = Plan.query.get_or_404(plan_id)
-
-    if plan.user_id != session["user_id"]:
-        return redirect(url_for("main.dashboard"))
-
-    return render_template("plan-view.html", plan=plan)
-
-
-# UPDATE
-@main.route("/plans/<int:plan_id>/edit", methods=["GET", "POST"])
-def edit_plan(plan_id):
-    if not require_login():
-        return redirect(url_for("main.login"))
-
-    plan = Plan.query.get_or_404(plan_id)
-
-    if plan.user_id != session["user_id"]:
-        return redirect(url_for("main.dashboard"))
-
-    if request.method == "POST":
-        plan.title = request.form.get("title")
-        plan.description = request.form.get("description")
-
-        db.session.commit()
-        return redirect(url_for("main.view_plan", plan_id=plan.id))
-
+        return redirect(url_for("main.plan_view", plan_id=plan.id))
     return render_template("plan-edit.html", plan=plan)
 
-
-# DELETE
-@main.route("/plans/<int:plan_id>/delete", methods=["POST"])
-def delete_plan(plan_id):
+@main.route("/plan/<int:plan_id>")
+def plan_view(plan_id):
     if not require_login():
         return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    return render_template("plan-view.html", plan=plan)
 
-    plan = Plan.query.get_or_404(plan_id)
-
-    if plan.user_id != session["user_id"]:
-        return redirect(url_for("main.dashboard"))
-
+@main.route("/plan/<int:plan_id>/delete", methods=["POST"])
+def plan_delete(plan_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
     db.session.delete(plan)
     db.session.commit()
-
     return redirect(url_for("main.dashboard"))
+
+@main.route("/plan/<int:plan_id>/share", methods=["POST"])
+def plan_share(plan_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    plan.is_template = not plan.is_template
+    db.session.commit()
+    return redirect(url_for("main.plan_view", plan_id=plan.id))
