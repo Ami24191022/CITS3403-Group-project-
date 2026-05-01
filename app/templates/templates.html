@@ -5,74 +5,70 @@
 
 {% block content %}
 
-  <!-- Header -->
-  <header class="py-5">
-    <div class="container">
-      <h1 class="fw-bold">Study Templates</h1>
-      <p class="text-secondary">
-        Browse and reuse study plans shared by other students.
-      </p>
-    </div>
-  </header>
+<header class="py-5">
+  <div class="container">
+    <h1 class="fw-bold">Study Templates</h1>
+    <p class="text-secondary">Browse and reuse study plans shared by other students.</p>
+  </div>
+</header>
 
-  <!-- Templates grid -->
-  <section class="pb-5">
-    <div class="container">
-      <div class="row g-4">
+<section class="pb-5">
+  <div class="container">
+    <div class="row g-4">
 
-        {% if templates %}
-          {% for template in templates %}
-          <div class="col-md-6">
-            <div class="card h-100 shadow-sm border-0">
-              <div class="card-body">
+      {% if templates %}
+        {% for template in templates %}
+        <div class="col-md-6">
+          <div class="card h-100 shadow-sm border-0">
+            <div class="card-body">
 
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="fw-semibold mb-0">{{ template.title }}</h5>
-                  <span class="badge bg-success">Template</span>
-                </div>
-
-                <p class="text-secondary small mt-2 mb-2">
-                  {{ template.description if template.description else 'No description provided.' }}
-                </p>
-
-                {% if template.weeks %}
-                  <p class="text-secondary small mb-2">{{ template.weeks }}-week study plan</p>
-                {% endif %}
-
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                  <div>
-                    <small class="text-secondary d-block">
-                      Created by {{ template.author.username if template.author else 'Unknown' }}
-                    </small>
-                  </div>
-                  <div class="d-flex gap-2">
-                    <a href="{{ url_for('main.template_view', template_id=template.id) }}"
-                       class="btn btn-outline-secondary btn-sm">View</a>
-                    <form method="post"
-                          action="{{ url_for('main.template_copy', template_id=template.id) }}"
-                          class="d-inline">
-                      <button class="btn btn-outline-primary btn-sm" type="submit">Copy</button>
-                    </form>
-                  </div>
-                </div>
-
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="fw-semibold mb-0">{{ template.title }}</h5>
+                <span class="badge bg-success">Template</span>
               </div>
+
+              <p class="text-secondary small mt-2 mb-2">
+                {{ template.description if template.description else 'No description provided.' }}
+              </p>
+
+              {% if template.weeks %}
+                <p class="text-secondary small mb-2">{{ template.weeks }}-week study plan</p>
+              {% endif %}
+
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                  <small class="text-secondary d-block">
+                    Created by {{ template.author.username if template.author else 'Unknown' }}
+                  </small>
+                </div>
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('main.view_template', template_id=template.id) }}"
+                     class="btn btn-outline-secondary btn-sm">View</a>
+                  <form method="post"
+                        action="{{ url_for('main.copy_template', template_id=template.id) }}"
+                        class="d-inline">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Copy</button>
+                  </form>
+                </div>
+              </div>
+
             </div>
           </div>
-          {% endfor %}
-        {% else %}
-          <div class="col-12">
-            <div class="card border-0 shadow-sm">
-              <div class="card-body text-center py-5">
-                <p class="text-secondary mb-2">No public templates yet.</p>
-                <a href="{{ url_for('main.signup') }}" class="btn btn-primary btn-sm">Sign up to share a template</a>
-              </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+              <p class="text-secondary mb-2">No public templates yet.</p>
+              <a href="{{ url_for('main.signup') }}" class="btn btn-primary btn-sm">Sign up to share a template</a>
             </div>
           </div>
-        {% endif %}
+        </div>
+      {% endif %}
 
-      </div>
     </div>
-  </section>
+  </div>
+</section>
 
 {% endblock %}
