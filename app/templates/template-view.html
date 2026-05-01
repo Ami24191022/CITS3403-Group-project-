@@ -60,10 +60,15 @@
                   <small class="text-secondary">{{ template.created_at.strftime('%d %B %Y') }}</small>
                 {% endif %}
               </div>
+
+              <!-- ✅ 修正ここ -->
               <form method="post"
-                    action="{{ url_for('main.copy_template', template_id=template.id) }}">
-                <button class="btn btn-primary btn-sm" type="submit">Copy to My Plans</button>
+                    action="{{ url_for('main.template_copy', template_id=template.id) }}">
+                <button class="btn btn-primary btn-sm" type="submit">
+                  Copy to My Plans
+                </button>
               </form>
+
             </div>
 
           </div>
