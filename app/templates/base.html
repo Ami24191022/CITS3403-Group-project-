@@ -36,14 +36,29 @@
           <li class="nav-item">
             <a class="nav-link {% block nav_templates %}{% endblock %}" href="{{ url_for('main.templates') }}">Templates</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {% block nav_dashboard %}{% endblock %}" href="{{ url_for('main.dashboard') }}">My Plans</a>
-          </li>
+          {% if session.get("user_id") %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.dashboard') }}">My Plans</a>
+            </li>
+          {% endif %}
         </ul>
 
-        <div class="d-flex align-items-center gap-2">
-          <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.login') }}">Log in</a>
-          <a class="btn btn-warning btn-sm fw-semibold" href="{{ url_for('main.signup') }}">Sign up</a>
+        <div class="d-flex gap-2">
+          {% if session.get("user_id") %}
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.dashboard') }}">
+              Dashboard
+            </a>
+            <a class="btn btn-danger btn-sm" href="{{ url_for('main.logout') }}">
+              Log out
+            </a>
+          {% else %}
+            <a class="btn btn-outline-light btn-sm" href="{{ url_for('main.login') }}">
+              Log in
+            </a>
+            <a class="btn btn-warning btn-sm fw-semibold" href="{{ url_for('main.signup') }}">
+              Sign up
+            </a>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -74,7 +89,12 @@
       <div class="d-flex gap-3 small">
         <a class="link-secondary" href="{{ url_for('main.home') }}">Home</a>
         <a class="link-secondary" href="{{ url_for('main.templates') }}">Templates</a>
-        <a class="link-secondary" href="{{ url_for('main.dashboard') }}">My Plans</a>
+
+        {% if session.get("user_id") %}
+          <a class="link-secondary" href="{{ url_for('main.dashboard') }}">My Plans</a>
+        {% else %}
+          <a class="link-secondary" href="{{ url_for('main.login') }}">Log in</a>
+        {% endif %}
       </div>
     </div>
   </footer>
