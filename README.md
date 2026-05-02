@@ -2,6 +2,19 @@
 
 This is a simple study planner web app built with Flask.
 
+---
+
+## Features
+
+* User sign up, log in, and log out
+* Create, view, edit, and delete study plans
+* Dashboard showing a user's saved plans
+* Public templates gallery
+* Copy public templates into personal plans
+* Responsive interface using Bootstrap 5
+
+---
+
 ## How to run
 
 1. Clone the repository
@@ -57,5 +70,7 @@ python run.py
 
 ## Notes
 
-* The app currently uses dummy data to render pages
-* The `.venv` folder is ignored in git
+* The app uses SQLite with SQLAlchemy.
+* The database file is created automatically at `instance/app.db`.
+* User accounts and study plans are stored in the database.
+* The `.venv` folder is ignored in git.
