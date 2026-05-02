@@ -4,7 +4,6 @@
 
 {% block head %}
 <style>
-  /* Session file cards */
   .session-file-card {
     background: #fff;
     border: 1px solid #dee2e6;
@@ -16,26 +15,15 @@
     justify-content: space-between;
     cursor: pointer;
     transition: box-shadow 0.18s, border-color 0.18s;
-    text-decoration: none;
     color: inherit;
   }
   .session-file-card:hover {
     box-shadow: 0 4px 16px rgba(0,0,0,0.10);
     border-color: #0d6efd;
-    color: inherit;
   }
-  .session-file-card .file-icon {
-    font-size: 2rem;
-    color: #6c757d;
-  }
-  .session-file-card .file-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #212529;
-    margin-top: 0.5rem;
-  }
+  .session-file-card .file-icon { font-size: 2rem; color: #6c757d; }
+  .session-file-card .file-title { font-size: 0.9rem; font-weight: 600; color: #212529; margin-top: 0.5rem; }
 
-  /* Add session dashed card */
   .session-add-card {
     background: #f8f9fa;
     border: 2px dashed #dee2e6;
@@ -50,14 +38,29 @@
     text-decoration: none;
     transition: border-color 0.18s, color 0.18s;
   }
-  .session-add-card:hover {
-    border-color: #0d6efd;
-    color: #0d6efd;
-  }
+  .session-add-card:hover { border-color: #0d6efd; color: #0d6efd; }
   .session-add-card i { font-size: 1.8rem; margin-bottom: 0.4rem; }
   .session-add-card span { font-size: 0.85rem; }
 
-  /* Filter tabs */
+  button.session-add-card {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6 !important;
+  }
+  button.session-add-card:hover {
+    border-color: #0d6efd !important;
+    color: #0d6efd;
+  }
+
+  button.session-add-card {
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6 !important;
+    padding: 0;
+  }
+  button.session-add-card:hover {
+    border-color: #0d6efd !important;
+    color: #0d6efd;
+  }
+
   .session-filter-btn {
     font-size: 0.82rem;
     padding: 0.25rem 0.9rem;
@@ -67,13 +70,9 @@
     color: #6c757d;
     cursor: pointer;
   }
-  .session-filter-btn.active {
-    background: #495057;
-    color: #fff;
-  }
+  .session-filter-btn.active { background: #495057; color: #fff; }
   .session-filter-btn:hover:not(.active) { background: #e9ecef; }
 
-  /* Progress section */
   .stat-box {
     border: 1px solid #dee2e6;
     border-radius: 8px;
@@ -152,68 +151,68 @@
       <div class="row g-3 mb-4" id="sessionGrid">
 
         {% if plan.sessions %}
-          {% for session in plan.sessions %}
-          <div class="col-6 col-md-4 col-lg-3 session-item" data-status="{{ session.status | default('notstarted') }}">
-            <div class="session-file-card">
+          {% for s in plan.sessions %}
+          <div class="col-6 col-md-4 col-lg-3 session-item" data-status="{{ s.status }}">
+            <a href="{{ url_for('main.session_edit', plan_id=plan.id, session_id=s.id) }}"
+               class="session-file-card d-flex flex-column justify-content-between text-decoration-none">
               <i class="bi bi-file-earmark-text file-icon"></i>
               <div>
-                <div class="file-title">{{ session.title }}</div>
-                {% if session.status | default('notstarted') == 'done' %}
-                  <span class="badge text-bg-success mt-1">Done</span>
-                {% elif session.status | default('notstarted') == 'inprogress' %}
-                  <span class="badge text-bg-warning text-dark mt-1">In Progress</span>
+                <div class="file-title mb-1">{{ s.title }}</div>
+                {% if s.status == 'done' %}
+                  <span class="badge text-bg-success">Done</span>
+                {% elif s.status == 'inprogress' %}
+                  <span class="badge text-bg-warning text-dark">In Progress</span>
                 {% else %}
-                  <span class="badge text-bg-light border text-secondary mt-1">Not Started</span>
+                  <span class="badge text-bg-light border text-secondary">Not Started</span>
                 {% endif %}
               </div>
-            </div>
+            </a>
           </div>
           {% endfor %}
         {% endif %}
 
         <!-- Add Session card -->
         <div class="col-6 col-md-4 col-lg-3">
-          <a href="{{ url_for('main.plan_edit', plan_id=plan.id) }}" class="session-add-card">
-            <i class="bi bi-plus-circle"></i>
-            <span>Add Session</span>
-          </a>
+          <form method="post" action="{{ url_for('main.session_create', plan_id=plan.id) }}">
+            <input type="hidden" name="title" value="Untitled Session" />
+            <button type="submit" class="session-add-card w-100 border-0">
+              <i class="bi bi-plus-circle"></i>
+              <span>Add Session</span>
+            </button>
+          </form>
         </div>
 
       </div>
 
       <!-- Progress section -->
+      {% set total = plan.sessions | length if plan.sessions else 0 %}
+      {% set done = plan.sessions | selectattr('status', 'eq', 'done') | list | length if plan.sessions else 0 %}
+      {% set remaining = total - done %}
+      {% set progress = ((done / total) * 100) | int if total > 0 else 0 %}
+
       <div class="card border-0 shadow-sm">
         <div class="card-body">
           <div class="d-flex justify-content-between align-items-center mb-1">
             <span class="fw-bold" style="font-size:1rem;">Progress</span>
-            <span class="fw-bold text-primary" style="font-size:1rem;">{{ plan.progress | default(0) }}%</span>
+            <span class="fw-bold text-primary" style="font-size:1rem;">{{ progress }}%</span>
           </div>
           <div class="progress mb-3" style="height:8px;">
-            <div class="progress-bar bg-primary"
-                 style="width:{{ plan.progress | default(0) }}%;"
-                 role="progressbar"></div>
+            <div class="progress-bar bg-primary" style="width:{{ progress }}%;" role="progressbar"></div>
           </div>
-
-          <!-- Stats row -->
           <div class="d-flex gap-2">
             <div class="stat-box">
               <div class="stat-label">Sessions</div>
-              <div class="stat-value">{{ plan.sessions | length if plan.sessions else 0 }}</div>
+              <div class="stat-value">{{ total }}</div>
             </div>
             <div class="stat-box">
               <div class="stat-label">Completed</div>
-              <div class="stat-value">
-                {{ plan.sessions | selectattr('status', 'eq', 'done') | list | length if plan.sessions else 0 }}
-              </div>
+              <div class="stat-value">{{ done }}</div>
             </div>
             <div class="stat-box">
               <div class="stat-label">Remaining</div>
-              <div class="stat-value">
-                {{ plan.sessions | rejectattr('status', 'eq', 'done') | list | length if plan.sessions else 0 }}
-              </div>
+              <div class="stat-value">{{ remaining }}</div>
             </div>
           </div>
-
         </div>
       </div>
 
@@ -224,15 +223,13 @@
 
 {% block scripts %}
 <script>
-  // Session filter tabs
   document.querySelectorAll('.session-filter-btn').forEach(btn => {
     btn.addEventListener('click', function () {
       document.querySelectorAll('.session-filter-btn').forEach(b => b.classList.remove('active'));
       this.classList.add('active');
       const filter = this.dataset.filter;
       document.querySelectorAll('.session-item').forEach(item => {
-        const status = item.dataset.status;
-        item.style.display = (filter === 'all' || status === filter) ? '' : 'none';
+        item.style.display = (filter === 'all' || item.dataset.status === filter) ? '' : 'none';
       });
     });
   });

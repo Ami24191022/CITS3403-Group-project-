@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import db, User, Plan
+from .models import db, User, Plan, Session
 
 main = Blueprint("main", __name__)
 
@@ -47,7 +47,6 @@ def signup():
             email=email,
             password_hash=generate_password_hash(password)
         )
-
         db.session.add(user)
         db.session.commit()
 
@@ -148,20 +147,17 @@ def plan_edit(plan_id=None):
         from datetime import date
         title = request.form.get("title", "").strip()
         description = request.form.get("description", "").strip()
-        start_str = request.form.get("start_date", "")
         end_str = request.form.get("end_date", "")
-        start_date = date.fromisoformat(start_str) if start_str else None
         end_date = date.fromisoformat(end_str) if end_str else None
         if not title:
             return render_template("plan-edit.html", plan=plan, error="Title is required.")
         if plan:
             plan.title = title
             plan.description = description
-            plan.start_date = start_date
             plan.end_date = end_date
         else:
             plan = Plan(title=title, description=description,
-                        start_date=start_date, end_date=end_date, user_id=user_id)
+                        end_date=end_date, user_id=user_id)
             db.session.add(plan)
         db.session.commit()
         return redirect(url_for("main.plan_view", plan_id=plan.id))
@@ -192,5 +188,64 @@ def plan_share(plan_id):
     user_id = session["user_id"]
     plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
     plan.is_template = not plan.is_template
+    db.session.commit()
+    return redirect(url_for("main.plan_view", plan_id=plan.id))
+
+
+# ----------------------
+# Session CRUD
+# ----------------------
+@main.route("/plan/<int:plan_id>/session/new", methods=["POST"])
+def session_create(plan_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    title = request.form.get("title", "").strip()
+    if title:
+        new_session = Session(title=title, plan_id=plan.id)
+        db.session.add(new_session)
+        db.session.commit()
+        return redirect(url_for("main.session_edit", plan_id=plan.id, session_id=new_session.id))
+    return redirect(url_for("main.plan_view", plan_id=plan.id))
+
+@main.route("/plan/<int:plan_id>/session/<int:session_id>/edit", methods=["GET", "POST"])
+def session_edit(plan_id, session_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    session_obj = Session.query.filter_by(id=session_id, plan_id=plan.id).first_or_404()
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        status = request.form.get("status", "notstarted")
+        notes = request.form.get("notes", "").strip()
+        if not title:
+            return render_template("session-edit.html", plan=plan, session_obj=session_obj, error="Title is required.")
+        session_obj.title = title
+        session_obj.status = status
+        db.session.commit()
+        return redirect(url_for("main.plan_view", plan_id=plan.id))
+    return render_template("session-edit.html", plan=plan, session_obj=session_obj)
+
+@main.route("/plan/<int:plan_id>/session/<int:session_id>/status", methods=["POST"])
+def session_status(plan_id, session_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    s = Session.query.filter_by(id=session_id, plan_id=plan.id).first_or_404()
+    s.status = request.form.get("status", "notstarted")
+    db.session.commit()
+    return redirect(url_for("main.plan_view", plan_id=plan.id))
+
+@main.route("/plan/<int:plan_id>/session/<int:session_id>/delete", methods=["POST"])
+def session_delete(plan_id, session_id):
+    if not require_login():
+        return redirect(url_for("main.login"))
+    user_id = session["user_id"]
+    plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
+    s = Session.query.filter_by(id=session_id, plan_id=plan.id).first_or_404()
+    db.session.delete(s)
     db.session.commit()
     return redirect(url_for("main.plan_view", plan_id=plan.id))
