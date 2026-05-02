@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import db, User, Plan
 
@@ -22,7 +22,7 @@ def home():
 # ----------------------
 @main.route("/signup", methods=["GET", "POST"])
 def signup():
-    if require_login():
+    if "user_id" in session:
         return redirect(url_for("main.dashboard"))
 
     if request.method == "POST":
@@ -31,22 +31,28 @@ def signup():
         confirm = request.form.get("confirmPassword", "")
 
         if not email or not password:
-            return render_template("signup.html", error="Email and password are required.")
+            flash("Email and password are required.", "danger")
+            return redirect(url_for("main.signup"))
+
         if password != confirm:
-            return render_template("signup.html", error="Passwords do not match.")
+            flash("Passwords do not match.", "danger")
+            return redirect(url_for("main.signup"))
 
         existing = User.query.filter_by(email=email).first()
         if existing:
-            return render_template("signup.html", error="Email already registered.")
+            flash("This email is already registered. Please log in.", "danger")
+            return redirect(url_for("main.login"))
 
         user = User(
             email=email,
-            password_hash=generate_password_hash(password, method='pbkdf2:sha256')
+            password_hash=generate_password_hash(password)
         )
+
         db.session.add(user)
         db.session.commit()
 
         session["user_id"] = user.id
+        flash("Account created successfully.", "success")
         return redirect(url_for("main.dashboard"))
 
     return render_template("signup.html")
@@ -54,7 +60,7 @@ def signup():
 
 @main.route("/login", methods=["GET", "POST"])
 def login():
-    if require_login():
+    if "user_id" in session:
         return redirect(url_for("main.dashboard"))
 
     if request.method == "POST":
@@ -62,10 +68,13 @@ def login():
         password = request.form.get("password", "")
 
         user = User.query.filter_by(email=email).first()
+
         if not user or not check_password_hash(user.password_hash, password):
-            return render_template("login.html", error="Invalid email or password.")
+            flash("Invalid email or password.", "danger")
+            return redirect(url_for("main.login"))
 
         session["user_id"] = user.id
+        flash("Logged in successfully.", "success")
         return redirect(url_for("main.dashboard"))
 
     return render_template("login.html")
@@ -74,6 +83,7 @@ def login():
 @main.route("/logout")
 def logout():
     session.pop("user_id", None)
+    flash("You have been logged out.", "info")
     return redirect(url_for("main.home"))
 
 
