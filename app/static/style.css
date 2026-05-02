@@ -1,6 +1,6 @@
 /* Keep custom CSS small; let Bootstrap do most styling. */
-:root {
-  --app-radius: 16px;
+:root { /*for the whole website*/
+  --app-radius: 16px; /*app standard round corner size*/
 }
 
 .rounded-4 {
