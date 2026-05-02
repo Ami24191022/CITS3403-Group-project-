@@ -1,7 +1,165 @@
 {% extends "base.html" %}
 
-{% block title %}{% if plan %}Edit Plan{% else %}New Plan{% endif %}{% endblock %}
-{% block nav_dashboard %}active{% endblock %}
+{% block title %}{% if plan %}Edit Plan{% else %}New Plan{% endif %} — Study Planner{% endblock %}
+
+{% block head %}
+<style>
+  .notion-panel {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    padding: 2.5rem 2.75rem 2rem;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .notion-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #111;
+    border: none;
+    outline: none;
+    width: 100%;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 1.4rem;
+    line-height: 1.2;
+  }
+  .notion-title::placeholder { color: #ccc; }
+
+  .prop-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 0.75rem;
+  }
+  .prop-row:last-of-type { border-bottom: none; }
+  .prop-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 140px;
+    color: #8a8f9d;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding-top: 0.3rem;
+  }
+  .prop-label i { font-size: 0.85rem; }
+  .prop-value { flex: 1; font-size: 0.875rem; color: #111; }
+  .prop-value input,
+  .prop-value select,
+  .prop-value textarea {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.875rem;
+    font-family: inherit;
+    color: #111;
+    width: 100%;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .prop-value input:hover,
+  .prop-value select:hover,
+  .prop-value textarea:hover,
+  .prop-value input:focus,
+  .prop-value select:focus,
+  .prop-value textarea:focus { background: #f7f7f7; }
+  .prop-value textarea { resize: vertical; min-height: 36px; }
+
+  .type-badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .type-badge.lecture    { background: #e0e7ff; color: #3730a3; }
+  .type-badge.workshop   { background: #dbeafe; color: #1e40af; }
+  .type-badge.revision   { background: #d1fae5; color: #065f46; }
+  .type-badge.assignment { background: #fce7f3; color: #9d174d; }
+
+  .add-prop-btn {
+    color: #adb5bd;
+    font-size: 0.82rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.35rem 0.4rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: color 0.15s, background 0.15s;
+  }
+  .add-prop-btn:hover { color: #495057; background: #f7f7f7; }
+
+  .notion-divider { border: none; border-top: 1px solid #f0f0f0; margin: 1.5rem 0; }
+
+  .notion-content {
+    font-size: 0.9rem;
+    color: #333;
+    border: none;
+    outline: none;
+    width: 100%;
+    background: transparent;
+    resize: none;
+    min-height: 140px;
+    font-family: inherit;
+    line-height: 1.7;
+    padding: 0;
+  }
+  .notion-content::placeholder { color: #ccc; }
+
+  .checklist-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+  .checklist-item input[type=checkbox] { flex-shrink: 0; }
+  .checklist-item input[type=text] {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.875rem;
+    color: #333;
+    font-family: inherit;
+  }
+  .checklist-item input[type=text]::placeholder { color: #ccc; }
+  .checklist-item.done input[type=text] { text-decoration: line-through; color: #adb5bd; }
+  .checklist-item .del-check {
+    color: #ccc;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+    line-height: 1;
+  }
+  .checklist-item .del-check:hover { color: #dc3545; }
+
+  .file-zone {
+    border: 1.5px dashed #dee2e6;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: border-color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .file-zone:hover { border-color: #0d6efd; color: #0d6efd; }
+</style>
+{% endblock %}
 
 {% block content %}
 
@@ -27,62 +185,188 @@
   </div>
 
   <main class="py-4 pb-5">
-    <div class="container" style="max-width:700px;">
+    <div class="container">
 
-      {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
-      {% endif %}
+      <!-- Top action bar -->
+      <div class="d-flex justify-content-between align-items-center mb-3" style="max-width:780px;margin:0 auto;">
+        {% if plan %}
+          <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Plan
+          </a>
+          <div class="d-flex gap-2">
+            <form method="post"
+                  action="{{ url_for('main.plan_delete', plan_id=plan.id) }}"
+                  onsubmit="return confirm('Delete this plan? This cannot be undone.');"
+                  class="d-inline">
+              <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </form>
+            <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+            <button class="btn btn-primary btn-sm" type="submit" form="planForm">Save</button>
+          </div>
+        {% else %}
+          <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back
+          </a>
+          <button class="btn btn-primary btn-sm" type="submit" form="planForm">Create Plan</button>
+        {% endif %}
+      </div>
 
-      <form method="post"
+      <!-- Form -->
+      <form id="planForm" method="post"
             action="{{ url_for('main.plan_edit', plan_id=plan.id) if plan else url_for('main.plan_edit') }}">
 
-        <div class="card border-0 shadow-sm">
-          <div class="card-body p-4">
+        {% if error %}
+          <div class="alert alert-danger" style="max-width:780px;margin:0 auto 1rem;">{{ error }}</div>
+        {% endif %}
 
-            <h2 class="h5 fw-bold mb-4">{% if plan %}Edit Plan{% else %}New Plan{% endif %}</h2>
+        <div class="notion-panel">
 
-            <div class="mb-3">
-              <label for="title" class="form-label fw-semibold">Title <span class="text-danger">*</span></label>
-              <input id="title" name="title" type="text" class="form-control"
-                     value="{{ plan.title if plan else '' }}"
-                     placeholder="e.g. CITS3403 Exam Sprint" required>
-            </div>
+          <!-- Title -->
+          <input class="notion-title" type="text" name="title"
+                 value="{{ plan.title if plan else '' }}"
+                 placeholder="Untitled plan" required />
 
-            <div class="mb-3">
-              <label for="description" class="form-label fw-semibold">Description</label>
-              <textarea id="description" name="description" class="form-control" rows="3"
-                        placeholder="What is this plan about?">{{ plan.description if plan else '' }}</textarea>
-            </div>
+          <!-- Properties -->
+          <div id="propertiesBlock">
 
-            <div class="row g-3 mb-3">
-              <div class="col-md-6">
-                <label for="start_date" class="form-label fw-semibold">Start Date</label>
-                <input id="start_date" name="start_date" type="date" class="form-control"
-                       value="{{ plan.start_date if plan else '' }}">
+            <div class="prop-row">
+              <div class="prop-label"><i class="bi bi-tag"></i> Type</div>
+              <div class="prop-value">
+                <select class="type-badge lecture" name="session_type" id="typeSelect" onchange="updateTypeBadge(this)">
+                  <option value="lecture">Lecture Summary</option>
+                  <option value="workshop">Workshop</option>
+                  <option value="revision">Revision</option>
+                  <option value="assignment">Assignment</option>
+                  <option value="other">+ Add custom type...</option>
+                </select>
+                <input type="text" id="customType" name="custom_type"
+                       placeholder="Enter custom type..."
+                       style="display:none; margin-top:0.4rem; border:1px solid #dee2e6; border-radius:4px; padding:0.2rem 0.4rem; font-size:0.85rem; width:100%;" />
               </div>
-              <div class="col-md-6">
-                <label for="end_date" class="form-label fw-semibold">Due Date</label>
-                <input id="end_date" name="end_date" type="date" class="form-control"
-                       value="{{ plan.end_date if plan else '' }}">
+            </div>
+
+            <div class="prop-row">
+              <div class="prop-label"><i class="bi bi-text-left"></i> Description</div>
+              <div class="prop-value">
+                <textarea name="description" rows="2"
+                          placeholder="What is this plan about?">{{ plan.description if plan else '' }}</textarea>
+              </div>
+            </div>
+
+            <div class="prop-row">
+              <div class="prop-label"><i class="bi bi-calendar3"></i> Due date</div>
+              <div class="prop-value">
+                <input type="date" name="end_date"
+                       value="{{ plan.end_date if plan else '' }}" />
+              </div>
+            </div>
+
+            <div class="prop-row" id="filesRow">
+              <div class="prop-label"><i class="bi bi-paperclip"></i> Files &amp; media</div>
+              <div class="prop-value">
+                <label class="file-zone" for="fileInput">
+                  <i class="bi bi-upload"></i> Upload a file
+                </label>
+                <input type="file" id="fileInput" name="files" class="d-none" multiple onchange="showFiles(this)" />
+                <div id="fileList" class="mt-1"></div>
               </div>
             </div>
 
           </div>
-        </div>
 
-        <div class="d-flex gap-2 mt-3 justify-content-end">
-          {% if plan %}
-            <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary">Cancel</a>
-          {% else %}
-            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
-          {% endif %}
-          <button type="submit" class="btn btn-primary">
-            {% if plan %}Save Changes{% else %}Create Plan{% endif %}
-          </button>
-        </div>
+          <hr class="notion-divider" />
 
+          <!-- Notes -->
+          <div class="mb-1 text-secondary small fw-semibold" style="letter-spacing:0.04em;">NOTES</div>
+          <textarea class="notion-content" name="notes"
+                    placeholder="Start writing your study notes here…">{{ plan.notes if plan else '' }}</textarea>
+
+          <hr class="notion-divider" />
+
+          <!-- Checklist -->
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="text-secondary small fw-semibold" style="letter-spacing:0.04em;">CHECKLIST</div>
+            <button type="button" class="add-prop-btn" onclick="addCheckItem()">
+              <i class="bi bi-plus"></i> Add item
+            </button>
+          </div>
+          <div id="checklistItems">
+            {% if plan and plan.checklist %}
+              {% for item in plan.checklist %}
+              <div class="checklist-item {% if item.done %}done{% endif %}">
+                <input type="checkbox" class="form-check-input mt-0"
+                       name="checklist_done" value="{{ loop.index0 }}"
+                       {% if item.done %}checked{% endif %}
+                       onchange="toggleCheck(this)">
+                <input type="text" name="checklist_item" value="{{ item.text }}" />
+                <button type="button" class="del-check" onclick="removeCheckItem(this)">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+        </div>
       </form>
     </div>
   </main>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function updateTypeBadge(sel) {
+    const customInput = document.getElementById('customType');
+    if (sel.value === 'other') {
+      customInput.style.display = 'block';
+      customInput.focus();
+      sel.className = 'type-badge lecture';
+    } else {
+      customInput.style.display = 'none';
+      sel.className = 'type-badge ' + sel.value;
+    }
+  }
+
+  function showFiles(input) {
+    const list = document.getElementById('fileList');
+    list.innerHTML = '';
+    Array.from(input.files).forEach(f => {
+      const el = document.createElement('div');
+      el.className = 'small text-secondary mt-1';
+      el.innerHTML = `<i class="bi bi-file-earmark me-1"></i>${f.name}`;
+      list.appendChild(el);
+    });
+  }
+
+  function toggleCheck(chk) {
+    chk.closest('.checklist-item').classList.toggle('done', chk.checked);
+  }
+
+  function removeCheckItem(btn) {
+    btn.closest('.checklist-item').remove();
+  }
+
+  function addCheckItem() {
+    const div = document.createElement('div');
+    div.className = 'checklist-item';
+    div.innerHTML = `
+      <input type="checkbox" class="form-check-input mt-0"
+             name="checklist_done" onchange="toggleCheck(this)">
+      <input type="text" name="checklist_item" placeholder="New item…" />
+      <button type="button" class="del-check" onclick="removeCheckItem(this)">
+        <i class="bi bi-x"></i>
+      </button>`;
+    document.getElementById('checklistItems').appendChild(div);
+    div.querySelector('input[type=text]').focus();
+  }
+
+  // Mark existing checked items
+  document.querySelectorAll('.checklist-item').forEach(item => {
+    if (item.querySelector('input[type=checkbox]').checked)
+      item.classList.add('done');
+  });
+</script>
 {% endblock %}
