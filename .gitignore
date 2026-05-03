@@ -7,3 +7,5 @@ Alishatest/
 .venv/
 __pycache__/
 *.pyc
+
+instance/app.db
