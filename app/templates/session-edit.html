@@ -262,7 +262,20 @@
               <i class="bi bi-plus"></i> Add item
             </button>
           </div>
-          <div id="checklistItems"></div>
+          <div id="checklistItems">
+            {%- for item in checklist_data %}
+            <div class="checklist-item {% if item.done %}done{% endif %}">
+              <input type="checkbox" class="form-check-input mt-0"
+                     name="checklist_done" value="{{ loop.index0 }}"
+                     {% if item.done %}checked{% endif %}
+                     onchange="toggleCheck(this)">
+              <input type="text" name="checklist_item" value="{{ item.text }}" />
+              <button type="button" class="del-check" onclick="removeCheckItem(this)">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+            {%- endfor %}
+          </div>
 
         </div>
       </form>
@@ -293,18 +306,31 @@
     btn.closest('.checklist-item').remove();
   }
 
+  function reindexChecklist() {
+    document.querySelectorAll('#checklistItems .checklist-item').forEach((item, i) => {
+      const chk = item.querySelector('input[type=checkbox]');
+      if (chk) chk.value = i;
+    });
+  }
+
   function addCheckItem() {
     const div = document.createElement('div');
     div.className = 'checklist-item';
     div.innerHTML = `
       <input type="checkbox" class="form-check-input mt-0"
-             name="checklist_done" onchange="toggleCheck(this)">
+             name="checklist_done" value="0" onchange="toggleCheck(this)">
       <input type="text" name="checklist_item" placeholder="New item…" />
       <button type="button" class="del-check" onclick="removeCheckItem(this)">
         <i class="bi bi-x"></i>
       </button>`;
     document.getElementById('checklistItems').appendChild(div);
+    reindexChecklist();
     div.querySelector('input[type=text]').focus();
+  }
+
+  function removeCheckItem(btn) {
+    btn.closest('.checklist-item').remove();
+    reindexChecklist();
   }
 </script>
 {% endblock %}

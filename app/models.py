@@ -31,4 +31,7 @@ class Session(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     status = db.Column(db.String(50), default="notstarted", nullable=False)  # notstarted, inprogress, done
+    due_date = db.Column(db.Date, nullable=True)
+    notes = db.Column(db.Text, nullable=True)
+    checklist = db.Column(db.Text, nullable=True)  # stored as JSON string
     plan_id = db.Column(db.Integer, db.ForeignKey("plans.id"), nullable=False)

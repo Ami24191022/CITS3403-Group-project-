@@ -217,16 +217,42 @@ def session_edit(plan_id, session_id):
     plan = Plan.query.filter_by(id=plan_id, user_id=user_id).first_or_404()
     session_obj = Session.query.filter_by(id=session_id, plan_id=plan.id).first_or_404()
     if request.method == "POST":
+        import json
+        from datetime import date
         title = request.form.get("title", "").strip()
         status = request.form.get("status", "notstarted")
         notes = request.form.get("notes", "").strip()
+        due_str = request.form.get("due_date", "")
+        due_date = date.fromisoformat(due_str) if due_str else None
+
+        # Build checklist from submitted form arrays
+        items = request.form.getlist("checklist_item")
+        done_indices = request.form.getlist("checklist_done")
+        checklist = [
+            {"text": text, "done": str(i) in done_indices}
+            for i, text in enumerate(items)
+            if text.strip()
+        ]
+
         if not title:
             return render_template("session-edit.html", plan=plan, session_obj=session_obj, error="Title is required.")
         session_obj.title = title
         session_obj.status = status
+        session_obj.notes = notes
+        session_obj.due_date = due_date
+        session_obj.checklist = json.dumps(checklist)
         db.session.commit()
         return redirect(url_for("main.plan_view", plan_id=plan.id))
-    return render_template("session-edit.html", plan=plan, session_obj=session_obj)
+
+    # Parse checklist JSON for template rendering
+    import json
+    checklist_data = []
+    if session_obj.checklist:
+        try:
+            checklist_data = json.loads(session_obj.checklist)
+        except (ValueError, TypeError):
+            checklist_data = []
+    return render_template("session-edit.html", plan=plan, session_obj=session_obj, checklist_data=checklist_data)
 
 @main.route("/plan/<int:plan_id>/session/<int:session_id>/status", methods=["POST"])
 def session_status(plan_id, session_id):
