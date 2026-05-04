@@ -79,19 +79,23 @@
                 {% if plan.end_date %}
                   <span><i class="bi bi-calendar3 me-1"></i>Due <strong class="text-dark">{{ plan.end_date }}</strong></span>
                 {% endif %}
-                  <span><i class="bi bi-pencil me-1 text-warning"></i><strong class="text-dark">{{ plan.session_count | default(0) }}</strong> sessions left</span>
+                  {% set remaining = plan.sessions | rejectattr('status', 'eq', 'done') | list | length %}
+                  <span><i class="bi bi-pencil me-1 text-warning"></i><strong class="text-dark">{{ remaining }}</strong> sessions left</span>
                
 
               </div>
 
               <!-- Progress bar -->
+              {% set total = plan.sessions | length %}
+              {% set done = plan.sessions | selectattr('status', 'eq', 'done') | list | length %}
+              {% set progress = ((done / total) * 100) | int if total > 0 else 0 %}
               <div class="d-flex justify-content-between align-items-center mb-1 small">
                 <span class="text-secondary">Progress</span>
-                <strong>{{ plan.progress | default(0) }}%</strong>
+                <strong>{{ progress }}%</strong>
               </div>
               <div class="progress" style="height:6px;">
                 <div class="progress-bar bg-primary"
-                     style="width:{{ plan.progress | default(0) }}%;"></div>
+                     style="width:{{ progress }}%;"></div>
               </div>
 
             </div>
