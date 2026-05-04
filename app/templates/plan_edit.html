@@ -163,7 +163,7 @@
 
 {% block content %}
 
-  <!-- Breadcrumb -->
+   <!-- Breadcrumb -->
   <div class="border-bottom bg-white">
     <div class="container py-2">
       <nav aria-label="breadcrumb">
@@ -191,23 +191,21 @@
       <div class="d-flex justify-content-between align-items-center mb-3" style="max-width:780px;margin:0 auto;">
         {% if plan %}
           <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Back to Plan
+            Back to Plan
           </a>
           <div class="d-flex gap-2">
             <form method="post"
                   action="{{ url_for('main.plan_delete', plan_id=plan.id) }}"
                   onsubmit="return confirm('Delete this plan? This cannot be undone.');"
                   class="d-inline">
-              <button type="submit" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-trash me-1"></i>Delete
-              </button>
+              <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
             </form>
             <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
             <button class="btn btn-primary btn-sm" type="submit" form="planForm">Save</button>
           </div>
         {% else %}
           <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Back
+            Back
           </a>
           <button class="btn btn-primary btn-sm" type="submit" form="planForm">Create Plan</button>
         {% endif %}
@@ -231,8 +229,48 @@
           <!-- Properties -->
           <div id="propertiesBlock">
 
+            <!-- Description (saved to DB) -->
             <div class="prop-row">
-              <div class="prop-label"><i class="bi bi-tag"></i> Type</div>
+              <div class="prop-label">Description</div>
+              <div class="prop-value">
+                <textarea name="description" rows="2"
+                          placeholder="What is this plan about?">{{ plan.description if plan else '' }}</textarea>
+              </div>
+            </div>
+
+            <!-- Start date (saved to DB) -->
+            <div class="prop-row">
+              <div class="prop-label">Start date</div>
+              <div class="prop-value">
+                <input type="date" name="start_date"
+                       value="{{ plan.start_date.isoformat() if plan and plan.start_date else '' }}" />
+              </div>
+            </div>
+
+            <!-- End date (saved to DB) -->
+            <div class="prop-row">
+              <div class="prop-label">End date</div>
+              <div class="prop-value">
+                <input type="date" name="end_date"
+                       value="{{ plan.end_date.isoformat() if plan and plan.end_date else '' }}" />
+              </div>
+            </div>
+
+            <!-- Share as template (saved to DB) -->
+            <div class="prop-row">
+              <div class="prop-label">Template</div>
+              <div class="prop-value">
+                <div class="form-check m-0">
+                  <input class="form-check-input" type="checkbox" id="is_template" name="is_template"
+                         {% if plan and plan.is_template %}checked{% endif %}>
+                  <label class="form-check-label" for="is_template">Share as template (public)</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Keep your extra UI fields, but they are NOT saved yet unless you implement it in routes/models -->
+            <div class="prop-row">
+              <div class="prop-label">Type (UI only)</div>
               <div class="prop-value">
                 <select class="type-badge lecture" name="session_type" id="typeSelect" onchange="updateTypeBadge(this)">
                   <option value="lecture">Lecture Summary</option>
@@ -247,28 +285,10 @@
               </div>
             </div>
 
-            <div class="prop-row">
-              <div class="prop-label"><i class="bi bi-text-left"></i> Description</div>
-              <div class="prop-value">
-                <textarea name="description" rows="2"
-                          placeholder="What is this plan about?">{{ plan.description if plan else '' }}</textarea>
-              </div>
-            </div>
-
-            <div class="prop-row">
-              <div class="prop-label"><i class="bi bi-calendar3"></i> Due date</div>
-              <div class="prop-value">
-                <input type="date" name="end_date"
-                       value="{{ plan.end_date if plan else '' }}" />
-              </div>
-            </div>
-
             <div class="prop-row" id="filesRow">
-              <div class="prop-label"><i class="bi bi-paperclip"></i> Files &amp; media</div>
+              <div class="prop-label">Files (UI only)</div>
               <div class="prop-value">
-                <label class="file-zone" for="fileInput">
-                  <i class="bi bi-upload"></i> Upload a file
-                </label>
+                <label class="file-zone" for="fileInput">Upload a file</label>
                 <input type="file" id="fileInput" name="files" class="d-none" multiple onchange="showFiles(this)" />
                 <div id="fileList" class="mt-1"></div>
               </div>
@@ -278,36 +298,19 @@
 
           <hr class="notion-divider" />
 
-          <!-- Notes -->
-          <div class="mb-1 text-secondary small fw-semibold" style="letter-spacing:0.04em;">NOTES</div>
+          <!-- Notes (UI only unless model/route supports it) -->
+          <div class="mb-1 text-secondary small fw-semibold" style="letter-spacing:0.04em;">NOTES (UI only)</div>
           <textarea class="notion-content" name="notes"
-                    placeholder="Start writing your study notes here…">{{ plan.notes if plan else '' }}</textarea>
+                    placeholder="Start writing your study notes here…"></textarea>
 
           <hr class="notion-divider" />
 
-          <!-- Checklist -->
+          <!-- Checklist (UI only unless model/route supports it) -->
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="text-secondary small fw-semibold" style="letter-spacing:0.04em;">CHECKLIST</div>
-            <button type="button" class="add-prop-btn" onclick="addCheckItem()">
-              <i class="bi bi-plus"></i> Add item
-            </button>
+            <div class="text-secondary small fw-semibold" style="letter-spacing:0.04em;">CHECKLIST (UI only)</div>
+            <button type="button" class="add-prop-btn" onclick="addCheckItem()">Add item</button>
           </div>
-          <div id="checklistItems">
-            {% if plan and plan.checklist %}
-              {% for item in plan.checklist %}
-              <div class="checklist-item {% if item.done %}done{% endif %}">
-                <input type="checkbox" class="form-check-input mt-0"
-                       name="checklist_done" value="{{ loop.index0 }}"
-                       {% if item.done %}checked{% endif %}
-                       onchange="toggleCheck(this)">
-                <input type="text" name="checklist_item" value="{{ item.text }}" />
-                <button type="button" class="del-check" onclick="removeCheckItem(this)">
-                  <i class="bi bi-x"></i>
-                </button>
-              </div>
-              {% endfor %}
-            {% endif %}
-          </div>
+          <div id="checklistItems"></div>
 
         </div>
       </form>
@@ -336,7 +339,7 @@
     Array.from(input.files).forEach(f => {
       const el = document.createElement('div');
       el.className = 'small text-secondary mt-1';
-      el.innerHTML = `<i class="bi bi-file-earmark me-1"></i>${f.name}`;
+      el.textContent = f.name;
       list.appendChild(el);
     });
   }
@@ -353,20 +356,11 @@
     const div = document.createElement('div');
     div.className = 'checklist-item';
     div.innerHTML = `
-      <input type="checkbox" class="form-check-input mt-0"
-             name="checklist_done" onchange="toggleCheck(this)">
+      <input type="checkbox" class="form-check-input mt-0" onchange="toggleCheck(this)">
       <input type="text" name="checklist_item" placeholder="New item…" />
-      <button type="button" class="del-check" onclick="removeCheckItem(this)">
-        <i class="bi bi-x"></i>
-      </button>`;
+      <button type="button" class="del-check" onclick="removeCheckItem(this)">x</button>`;
     document.getElementById('checklistItems').appendChild(div);
     div.querySelector('input[type=text]').focus();
   }
-
-  // Mark existing checked items
-  document.querySelectorAll('.checklist-item').forEach(item => {
-    if (item.querySelector('input[type=checkbox]').checked)
-      item.classList.add('done');
-  });
 </script>
 {% endblock %}
