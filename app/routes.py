@@ -123,7 +123,7 @@ def dashboard():
         .all()
     )
 
-    return render_template("dashboard.html", plans=plans)
+    return render_template("dashboard.html", plans=plans, today=date.today())
 
 
 # ----------------------
