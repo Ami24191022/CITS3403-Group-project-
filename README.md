@@ -20,8 +20,8 @@ This is a simple study planner web app built with Flask.
 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourname/your-repo-name.git
-cd your-repo-name
+git clone https://github.com/Ami24191022/CITS3403-Group-project-.git
+cd CITS3403-Group-project-
 ```
 
 2. Create a virtual environment
@@ -74,3 +74,4 @@ python run.py
 * The database file is created automatically at `instance/app.db`.
 * User accounts and study plans are stored in the database.
 * The `.venv` folder is ignored in git.
+* User A shares plan as template → User B can see it in Templates → User B copies it.
