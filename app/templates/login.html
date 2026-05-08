@@ -17,6 +17,10 @@
           <section class="card border-0 shadow-sm">
             <div class="card-body p-4">
 
+              {% if error %}
+                <div class="alert alert-danger" role="alert">{{ error }}</div>
+              {% endif %}
+
               <form method="post" action="{{ url_for('main.login') }}" novalidate>
 
                 <div class="mb-3">
