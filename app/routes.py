@@ -1,7 +1,7 @@
 import json
 from datetime import date
 
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash, abort
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from .models import db, User, Plan, Session
@@ -28,6 +28,15 @@ def parse_date(value):
 @main.route("/")
 def home():
     return render_template("index.html")
+
+
+@main.route("/api/check-email")
+def api_check_email():
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"exists": False})
+    user = User.query.filter_by(email=email).first()
+    return jsonify({"exists": user is not None})
 
 
 # ----------------------
