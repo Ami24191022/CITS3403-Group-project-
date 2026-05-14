@@ -2,7 +2,7 @@ import os
 from flask import Flask #Flask is the tool/framework used to build websites (without it, I can't create Flask app)
 from .models import db #from the models.py file (look in the current app folder) in the same folder, import db 
 
-def create_app(): #create and set up the Flask app
+def create_app(test_config=None): #create and set up the Flask app
 
     #store Flask app in app
     #__name__ helps Flask find files like templates and static files in the app folder (Flask needs this to know where your project starts from)
@@ -19,6 +19,8 @@ def create_app(): #create and set up the Flask app
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db" #tell Flask/SQLAlchemy to use SQLite database and store data in app.db 
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False #do not track every tiny object change internally (uses extra memory, is usually not needed, can create warning messages)
 
+    if test_config:
+        app.config.update(test_config)
     #connect database to Flask app
     db.init_app(app)
 

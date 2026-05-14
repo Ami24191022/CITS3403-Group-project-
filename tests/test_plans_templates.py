@@ -7,7 +7,7 @@ def create_user(email="test@example.com"):
         first_name="Test",
         last_name="User",
         email=email,
-        password_hash=generate_password_hash("Password123")
+        password_hash=generate_password_hash("Password123", method="pbkdf2:sha256")
     )
     db.session.add(user)
     db.session.commit()
