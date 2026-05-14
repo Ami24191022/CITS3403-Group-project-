@@ -1,3 +1,4 @@
+#builds the website before it starts running
 import os
 from flask import Flask #Flask is the tool/framework used to build websites (without it, I can't create Flask app)
 from .models import db #from the models.py file (look in the current app folder) in the same folder, import db 
@@ -29,8 +30,7 @@ def create_app(test_config=None): #create and set up the Flask app
     from .routes import main #import main from routes.py (bring in all the website page routes) [avoid circular imports]
     app.register_blueprint(main) #add all routes from the main Blueprint into this app (connect all pages/routes to the website, so that visiting different pages would work)
 
-    # Create tables (simple uni approach)
-    with app.app_context():
-        db.create_all()
+    with app.app_context(): #tell Flask we are working inside this app now
+        db.create_all() #look at my models.py and create the matching database tables (if they don't already exist, only creates missing tables)
 
-    return app
+    return app #sends the completed Flask app back to run.py that called create_app()
