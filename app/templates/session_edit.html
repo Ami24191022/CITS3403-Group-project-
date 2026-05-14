@@ -161,10 +161,6 @@
     chk.closest('.checklist-item').classList.toggle('done', chk.checked);
   }
 
-  function removeCheckItem(btn) {
-    btn.closest('.checklist-item').remove();
-  }
-
   function reindexChecklist() {
     document.querySelectorAll('#checklistItems .checklist-item').forEach((item, i) => {
       const chk = item.querySelector('input[type=checkbox]');
