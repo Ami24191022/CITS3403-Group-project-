@@ -38,6 +38,7 @@
                   action="{{ url_for('main.session_delete', plan_id=plan.id, session_id=session_obj.id) }}"
                   onsubmit="return confirm('Delete this session?');"
                   class="d-inline">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-outline-danger btn-sm">
                 <i class="bi bi-trash me-1"></i>Delete
               </button>
@@ -53,6 +54,7 @@
       <!-- Form -->
       <form id="sessionForm" method="post"
             action="{% if session_obj %}{{ url_for('main.session_edit', plan_id=plan.id, session_id=session_obj.id) }}{% else %}{{ url_for('main.session_create', plan_id=plan.id) }}{% endif %}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
         {% if error %}
           <div class="alert alert-danger" style="max-width:780px;margin:0 auto 1rem;">{{ error }}</div>

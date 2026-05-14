@@ -1,6 +1,7 @@
 import os
 from flask import Flask #Flask is the tool/framework used to build websites (without it, I can't create Flask app)
 from .models import db #from the models.py file (look in the current app folder) in the same folder, import db 
+from flask_wtf.csrf import CSRFProtect
 
 def create_app(test_config=None): #create and set up the Flask app
 
@@ -13,6 +14,7 @@ def create_app(test_config=None): #create and set up the Flask app
     #exp: session["user_id"] = user.id (that needs a secret key)
     #when a user logs in, Flask stores something in the browser cookie (the secret key helps Flask check that the cookie was not tampered with)
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-later")
+    csrf = CSRFProtect(app)
 
     #SQLite = the actual database
     #SQLAlchemy = the Python tool used to talk to the database

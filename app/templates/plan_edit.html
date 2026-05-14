@@ -29,6 +29,7 @@
         <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary btn-sm">Back to Plan</a>
         <div class="d-flex gap-2">
           <form method="post" action="{{ url_for('main.plan_delete', plan_id=plan.id) }}" onsubmit="return confirm('Delete this plan?');" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
           </form>
           <a href="{{ url_for('main.plan_view', plan_id=plan.id) }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
@@ -41,6 +42,7 @@
     </div>
 
     <form id="planForm" method="post" action="{% if plan %}{{ url_for('main.plan_edit', plan_id=plan.id) }}{% else %}{{ url_for('main.plan_edit') }}{% endif %}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {% if error %}
         <div class="alert alert-danger" style="max-width:780px;margin:0 auto 1rem;">{{ error }}</div>
       {% endif %}
