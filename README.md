@@ -80,3 +80,9 @@ python run.py
 
 * Terminal 1: python run.py
 * Terminal 2: pytest tests/selenium -q
+
+##　Security
+* Passwords are securely stored using Werkzeug password hashing.
+* User sessions are protected using Flask SECRET_KEY configuration.
+* Authentication is required to access private plans and dashboard pages.
+* Users can only edit or delete their own plans and sessions.
