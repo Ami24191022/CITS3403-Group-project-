@@ -49,7 +49,7 @@
                     <input id="email" name="email" type="email" class="form-control"
                            placeholder="name@student.uwa.edu.au" autocomplete="email" required>
                     <div id="emailHelpAjax" class="small mt-1"></div>
-                           <div class="form-text">Use an email you can access (we'll use it for login).</div>
+                    <div class="form-text">Use an email you can access (we'll use it for login).</div>
                     <div class="invalid-feedback">Please enter a valid email address.</div>
                   </div>
 
@@ -143,5 +143,50 @@
       return;
     }
   });
+  const emailInput = document.getElementById("email");
+const emailMsg = document.getElementById("emailHelpAjax");
+const submitBtn = document.querySelector("button[type='submit']");
+let lastCheckedEmail = "";
+
+async function checkEmail(email) {
+  const res = await fetch(`/api/check-email?email=${encodeURIComponent(email)}`, {
+    headers: { "Accept": "application/json" }
+  });
+
+  return await res.json();
+}
+
+async function onEmailChange() {
+  const email = emailInput.value.trim().toLowerCase();
+
+  emailMsg.textContent = "";
+  emailMsg.className = "small mt-1";
+  submitBtn.disabled = false;
+
+  if (!email || email === lastCheckedEmail) return;
+
+  lastCheckedEmail = email;
+
+  try {
+    const data = await checkEmail(email);
+
+    if (data.exists) {
+      emailMsg.textContent = "This email is already registered. Try logging in.";
+      emailMsg.classList.add("text-danger");
+      submitBtn.disabled = true;
+    } else {
+      emailMsg.textContent = "Email is available.";
+      emailMsg.classList.add("text-success");
+      submitBtn.disabled = false;
+    }
+
+  } catch (e) {
+    emailMsg.textContent = "";
+    submitBtn.disabled = false;
+  }
+}
+
+emailInput.addEventListener("blur", onEmailChange);
+
 </script>
 {% endblock %}
