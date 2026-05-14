@@ -1,6 +1,16 @@
-cits3403RandomRepo/
-.venv/
+# Python
 __pycache__/
 *.pyc
-Alishatest/
-instance/*.db
+
+# Virtual environment
+.venv/
+
+# Flask database / instance files
+instance/
+*.db
+
+# Pytest cache
+.pytest_cache/
+
+# macOS
+.DS_Store
