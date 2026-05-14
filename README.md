@@ -75,3 +75,8 @@ python run.py
 * User accounts and study plans are stored in the database.
 * The `.venv` folder is ignored in git.
 * User A shares plan as template → User B can see it in Templates → User B copies it.
+
+## How to run selenium tests
+
+* Terminal 1: python run.py
+* Terminal 2: pytest tests/selenium -q
