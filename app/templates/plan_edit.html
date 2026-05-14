@@ -78,7 +78,8 @@
             <div class="prop-label">Template</div>
             <div class="prop-value">
               <div class="form-check m-0">
-                <input class="form-check-input" type="checkbox" id="is_template" name="is_template" {% if plan and plan.is_template %}checked{% endif %}>
+                <input class="form-check-input" type="checkbox" id="is_template" name="is_template"
+                       {% if plan and plan.is_template %}checked{% endif %}>
                 <label class="form-check-label" for="is_template">Share as template (public)</label>
               </div>
             </div>
@@ -94,8 +95,4 @@
 </main>
 {% endblock %}
 
-{% block scripts %}
-<script>
-  /* Keep your previous JS for badges, files, checklist here as-is */
-</script>
-{% endblock %}
+{% block scripts %}{% endblock %}

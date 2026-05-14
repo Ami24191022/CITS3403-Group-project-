@@ -18,8 +18,10 @@
 
           <section class="card border-0 shadow-sm">
             <div class="card-body p-4">
-
+              
+              {% if error %}
               <div id="formAlert" class="alert alert-danger d-none" role="alert" aria-live="polite"></div>
+              {% endif %}
 
               <form id="signupForm" method="post" action="{{ url_for('main.signup') }}" novalidate>
                 <div class="row g-3">
