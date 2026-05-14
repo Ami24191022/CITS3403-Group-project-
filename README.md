@@ -68,6 +68,15 @@ python run.py
 
 ---
 
+## Group Members
+
+| UWA ID | Name | GitHub Username |
+| 24191022 | Ami Takyu | Ami24191022 |
+| 24823211 | Lee Jon Lew | LeeJon94 |
+| 24276089 | Alisha Pribadi| ceprib |
+
+---
+
 ## Notes
 
 * The app uses SQLite with SQLAlchemy.
@@ -76,10 +85,14 @@ python run.py
 * The `.venv` folder is ignored in git.
 * User A shares plan as template → User B can see it in Templates → User B copies it.
 
+---
+
 ## How to run selenium tests
 
 * Terminal 1: python run.py
 * Terminal 2: pytest tests/selenium -q
+
+---
 
 ##　Security
 * Passwords are securely stored using Werkzeug password hashing.
