@@ -36,6 +36,7 @@
           <a class="btn btn-outline-secondary btn-sm"
              href="{{ url_for('main.plan_edit', plan_id=plan.id) }}">Edit Plan</a>
           <form method="post" action="{{ url_for('main.plan_share', plan_id=plan.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-outline-success btn-sm" type="submit">
               {% if plan.is_template %}Unshare{% else %}Share as Template{% endif %}
             </button>
@@ -44,6 +45,7 @@
                 action="{{ url_for('main.plan_delete', plan_id=plan.id) }}"
                 onsubmit="return confirm('Delete this plan? This cannot be undone.');"
                 class="d-inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
           </form>
         </div>
@@ -92,6 +94,7 @@
         <!-- Add Session card -->
         <div class="col-6 col-md-4 col-lg-3">
           <form method="post" action="{{ url_for('main.session_create', plan_id=plan.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="title" value="Untitled Session" />
             <button type="submit" class="session-add-card w-100 border-0">
               <i class="bi bi-plus-circle"></i>
