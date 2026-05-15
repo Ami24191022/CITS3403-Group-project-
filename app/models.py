@@ -66,48 +66,47 @@ class Plan(db.Model): #defines a plans table (each row is one study plan)
         nullable=False
     )
 
-    sessions = db.relationship(
+    sessions = db.relationship( #each plan can have multiple sessions (like weeks or tasks)
         "Session",
-        backref="plan",
+        backref="plan", #plan.sessions gives all sessions belonging to this plan
         lazy=True,
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan" #if a plan is deleted, all its sessions are deleted
     )
 
     @property
-    def weeks(self):
+    def weeks(self): #computes how many weeks the plan spans
         if not self.start_date or not self.end_date:
             return None
-
         days = (self.end_date - self.start_date).days + 1
         if days <= 0:
             return None
-
+        #adds 6 days before floor division so partial weeks count as one week
         return max(1, (days + 6) // 7)
 
 
-class Session(db.Model):
+class Session(db.Model): #each session is a small part of a plan (like a lecture or a task)
     __tablename__ = "sessions"
-
+    #session id
     id = db.Column(db.Integer, primary_key=True)
-
+    #name of the session
     title = db.Column(db.String(200), nullable=False)
-
+    #type like lecture, lab, etc
     session_type = db.Column(db.String(50), default="lecture", nullable=False)
-
+    #current state (not started, in progress, done)
     status = db.Column(
         db.String(50),
         default="notstarted",
         nullable=False
     )
-
+    #optional date when session is due
     due_date = db.Column(db.Date, nullable=True)
+    #optional extra text
     notes = db.Column(db.Text, nullable=True)
-
-    # Stored as JSON string
+    #optional list stored as JSON string (tasks inside the session)
     checklist = db.Column(db.Text, nullable=True)
-
+    #links session to a plan
     plan_id = db.Column(db.Integer, db.ForeignKey("plans.id"), nullable=False)
-
+    #timestamps part
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(
         db.DateTime,
