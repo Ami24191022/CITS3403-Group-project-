@@ -1,36 +1,45 @@
 import json
-from datetime import date
-
+from datetime import date #for calendar dates
+#Blueprint: allows me to group routes/pages together
+#render_template: renders HTML templates for the browser
+#request: handles data coming from forms or URL queries
+#redirect: redirects the browser to another page
+#url_for: dynamically builds URLs based on route names
+#session: keeps track of logged-in users
+#flash: displays temporary messages to the user
+#jsonify: sends JSON responses (used for APIs)
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+#generate_password_hash / check_password_hash: safely store and verify passwords
 from werkzeug.security import generate_password_hash, check_password_hash
-
+#my database connection and models
 from .models import db, User, Plan, Session
 
+#main is a group of routes
+#Blueprint lets Flask know these routes belong together
+#this is registered in my __init__.py with app.register_blueprint(main)
 main = Blueprint("main", __name__)
 
-
+#checks if a user is logged in by seeing if user_id is in the session.
+#used throughout your routes to protect pages
 def require_login():
-    return "user_id" in session
+    return "user_id" in session #returns True or False
 
-
-def parse_date(value):
+def parse_date(value): #parse dates from forms
     if not value:
         return None
     try:
-        return date.fromisoformat(value)
+        return date.fromisoformat(value) #converts a string like "2026-05-15" into a Python date object
     except ValueError:
         return None
-
 
 # ----------------------
 # Public pages
 # ----------------------
-@main.route("/")
+@main.route("/") #homepage route (/)
 def home():
-    return render_template("index.html")
+    return render_template("index.html") #shows index.html to the user
 
-
-@main.route("/api/check-email")
+@main.route("/api/check-email") #API route that returns JSON
 def api_check_email():
     email = request.args.get("email", "").strip().lower()
     if not email:

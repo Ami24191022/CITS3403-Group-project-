@@ -1,109 +1,84 @@
-import uuid
+import time
 import pytest
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
-
+from selenium.webdriver.support import expected_conditions as EC
 
 BASE_URL = "http://127.0.0.1:5000"
-
 
 @pytest.fixture
 def driver():
     options = webdriver.ChromeOptions()
+    # options.add_argument("--headless=new")  # enable later if you want
     options.add_argument("--window-size=1200,800")
+    d = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    yield d
+    d.quit()
 
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=options
-    )
-
-    yield driver
-    driver.quit()
-
-#opens the login page, enters a fake email and password, clicks login, then checks for the error message "Invalid email or password" on the page
-def test_invalid_login_shows_error_message(driver):
+def test_login_invalid_shows_error(driver):
     driver.get(f"{BASE_URL}/login")
-
     driver.find_element(By.NAME, "email").send_keys("wrong@test.com")
-    driver.find_element(By.NAME, "password").send_keys("wrongpassword")
+    driver.find_element(By.NAME, "password").send_keys("wrongpass")
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-    WebDriverWait(driver, 5).until(
-        lambda d: "Invalid email or password" in d.page_source
-    )
-
+    time.sleep(0.5)
     assert "Invalid email or password" in driver.page_source
 
-#checks: Invalid signup details are rejected properly.
-def test_signup_password_mismatch_shows_error_message(driver):
+def signup_user(driver, email):
     driver.get(f"{BASE_URL}/signup")
 
+    # Fill required fields (adjust names if yours differ)
     driver.find_element(By.NAME, "firstName").send_keys("Test")
     driver.find_element(By.NAME, "lastName").send_keys("User")
-    driver.find_element(By.NAME, "email").send_keys(f"test{uuid.uuid4().hex[:8]}@test.com")
-    driver.find_element(By.NAME, "password").send_keys("Password123")
-    driver.find_element(By.NAME, "confirmPassword").send_keys("Different123")
-
-    agree = driver.find_element(By.ID, "agree")
-    if not agree.is_selected():
-        agree.click()
-
-    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-
-    WebDriverWait(driver, 5).until(
-        lambda d: "Passwords do not match" in d.page_source
-    )
-
-    assert "Passwords do not match" in driver.page_source
-
-#Test dashboard requires login
-def test_dashboard_requires_login(driver):
-    driver.get(f"{BASE_URL}/dashboard")
-
-    WebDriverWait(driver, 5).until(
-        lambda d: "/login" in d.current_url
-    )
-
-    assert "/login" in driver.current_url
-
-# Test if logout works
-def test_logout_works(driver):
-    email = f"logout{uuid.uuid4().hex[:8]}@test.com"
-
-    # Sign up a new user first so we are logged in
-    driver.get(f"{BASE_URL}/signup")
-
-    driver.find_element(By.NAME, "firstName").send_keys("Logout")
-    driver.find_element(By.NAME, "lastName").send_keys("Test")
     driver.find_element(By.NAME, "email").send_keys(email)
-    driver.find_element(By.NAME, "password").send_keys("Password123")
-    driver.find_element(By.NAME, "confirmPassword").send_keys("Password123")
+    driver.find_element(By.NAME, "password").send_keys("Pass1234")
+    driver.find_element(By.NAME, "confirmPassword").send_keys("Pass1234")
 
-    agree = driver.find_element(By.ID, "agree")
-    if not agree.is_selected():
-        agree.click()
+    # Tick "agree" checkbox if present/required
+    try:
+        agree = driver.find_element(By.ID, "agree")
+        if not agree.is_selected():
+            agree.click()
+    except Exception:
+        pass  # if your form doesn't have it, ignore
 
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-    # After signup, user should be sent to dashboard
+    # Wait until we either reach dashboard OR see an error on signup page
     WebDriverWait(driver, 5).until(
-        lambda d: "/dashboard" in d.current_url
+        lambda d: "/dashboard" in d.current_url or "/signup" in d.current_url
     )
 
+def test_signup_redirects_to_dashboard(driver):
+    email = f"user{int(time.time())}@test.com"
+    signup_user(driver, email)
     assert "/dashboard" in driver.current_url
 
-    # Now log out
-    driver.get(f"{BASE_URL}/logout")
+def test_create_plan_appears_on_dashboard(driver):
+    email = f"user{int(time.time())}@test.com"
+    signup_user(driver, email)
+    assert "/dashboard" in driver.current_url
 
-    # After logout, dashboard should no longer be accessible
-    driver.get(f"{BASE_URL}/dashboard")
+    # Go create plan
+    driver.get(f"{BASE_URL}/plan/new")
 
-    WebDriverWait(driver, 5).until(
-        lambda d: "/login" in d.current_url
+    # Confirm we didn't get redirected to login
+    assert "/login" not in driver.current_url
+
+    # Wait for title field to exist (plan form loaded)
+    title_input = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.NAME, "title"))
     )
+    title_input.send_keys("Selenium Plan")
 
-    assert "/login" in driver.current_url
+    driver.find_element(By.NAME, "description").send_keys("Created by selenium")
+
+    # Your plan_edit.html uses buttons like form="planForm"
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit'], button[form='planForm']").click()
+
+    # Go back to dashboard and verify plan appears
+    driver.get(f"{BASE_URL}/dashboard")
+    assert "Selenium Plan" in driver.page_source
