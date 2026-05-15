@@ -1,55 +1,64 @@
-from datetime import datetime
-from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime #work with dates and times
+from flask_sqlalchemy import SQLAlchemy #lets python talk to my database
 
-db = SQLAlchemy()
+db = SQLAlchemy() #create database object to connect database to Flask app in __init__.py
 
-
-class User(db.Model):
-    __tablename__ = "users"
-
+class User(db.Model): #defines a table called User in my database (each instance of User is one row in the table)
+    __tablename__ = "users" #names the table in the database users
+    #every user has an ID number
+    #primary_key=True means it’s unique and identifies this user
     id = db.Column(db.Integer, primary_key=True)
-
-    # Signup / login
+    #signup / login part
+    #email is stored as text (max 255 characters)
+    #unique=True: no two users can have the same email
+    #nullable=False: email is required
+    #index=True: makes searching by email faster
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    #stores the hashed password (never store plain passwords, only hashes for security)
     password_hash = db.Column(db.String(255), nullable=False)
-
-    # Optional display fields
+    #optional display fields
+    #can be empty
     first_name = db.Column(db.String(100), nullable=True)
     last_name = db.Column(db.String(100), nullable=True)
-
-    # Timestamps
+    #timestamps part
+    #automatically stores when the user was created
+    #default=datetime.utcnow: automatically sets to the current time
+    #nullable=False: cannot be empty
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
-    plans = db.relationship(
+    plans = db.relationship( #links users to their plans
         "Plan",
-        backref="user",
-        lazy=True,
-        cascade="all, delete-orphan"
+        backref="user", #lets a plan know which user it belongs to: plan.user
+        lazy=True, #loads the related plans automatically when needed
+        cascade="all, delete-orphan" #if a user is deleted, all their plans are also deleted
     )
 
-    @property
+    @property #python property???
     def username(self):
-        if self.first_name or self.last_name:
-            return f"{self.first_name or ''} {self.last_name or ''}".strip()
-        return self.email.split("@")[0]
+        if self.first_name or self.last_name: #if the user has a first or last name
+            return f"{self.first_name or ''} {self.last_name or ''}".strip() #returns "First Last"
+        return self.email.split("@")[0] #otherwise, it uses the part of their email before the @
 
-
-class Plan(db.Model):
+class Plan(db.Model): #defines a plans table (each row is one study plan)
     __tablename__ = "plans"
-
+    #plan id
     id = db.Column(db.Integer, primary_key=True)
-
+    #required name of the plan
     title = db.Column(db.String(200), nullable=False)
+    #optional notes
     description = db.Column(db.Text, nullable=True)
-
+    #optional start/end dates for the plan
     start_date = db.Column(db.Date, nullable=True)
     end_date = db.Column(db.Date, nullable=True)
-
+    #True if this plan is a public template
+    #False if it’s private
     is_template = db.Column(db.Boolean, default=False, nullable=False)
-
+    #links the plan to a user (users.id)
+    #every plan must belong to one user
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-
+    #when the plan was created
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    #automatically updated every time the plan is changed
     updated_at = db.Column(
         db.DateTime,
         default=datetime.utcnow,
