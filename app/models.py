@@ -33,7 +33,7 @@ class User(db.Model): #defines a table called User in my database (each instance
         cascade="all, delete-orphan" #if a user is deleted, all their plans are also deleted
     )
 
-    @property #python property???
+    @property #python property lets me read an attribute safely (to control what happens when someone reads or changes the value)
     def username(self):
         if self.first_name or self.last_name: #if the user has a first or last name
             return f"{self.first_name or ''} {self.last_name or ''}".strip() #returns "First Last"
