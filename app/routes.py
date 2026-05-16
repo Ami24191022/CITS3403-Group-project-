@@ -39,7 +39,7 @@ def parse_date(value): #parse dates from forms
 def home():
     return render_template("index.html") #shows index.html to the user
 
-@main.route("/api/check-email") #API route that returns JSON???
+@main.route("/api/check-email") #API route that returns JSON 
 def api_check_email(): #live email validation on signup forms
     email = request.args.get("email", "").strip().lower()
     if not email:
@@ -103,71 +103,58 @@ def login():
         return redirect(url_for("main.dashboard"))
     return render_template("login.html")
 
-
 @main.route("/logout")
 def logout():
-    session.pop("user_id", None)
+    session.pop("user_id", None) #removing user_id from session
     flash("Logged out successfully.", "success")
     return redirect(url_for("main.home"))
-
 
 # ----------------------
 # Dashboard
 # ----------------------
 @main.route("/dashboard")
 def dashboard():
-    if not require_login():
+    if not require_login(): #only accessible if logged in
         return redirect(url_for("main.login"))
-
-    plans = (
+    plans = ( #fetches all plans for the logged-in user, newest first
         Plan.query
         .filter_by(user_id=session["user_id"])
         .order_by(Plan.updated_at.desc())
         .all()
     )
-
-    return render_template("dashboard.html", plans=plans, today=date.today())
-
+    return render_template("dashboard.html", plans=plans, today=date.today()) #sends plans and today’s date to the template
 
 # ----------------------
 # Templates
 # ----------------------
 @main.route("/templates")
 def templates():
-    q = Plan.query.filter_by(is_template=True)
-
-    if require_login():
+    q = Plan.query.filter_by(is_template=True) #all public templates
+    if require_login(): #if logged in, excludes templates that the current user created
         q = q.filter(Plan.user_id != session["user_id"])
-
     templates_list = q.order_by(Plan.updated_at.desc()).all()
-    return render_template("templates.html", templates=templates_list)
-
+    return render_template("templates.html", templates=templates_list) #passes templates to templates.html
 
 @main.route("/templates/<int:template_id>")
 def template_view(template_id):
     template = Plan.query.filter_by(id=template_id, is_template=True).first_or_404()
-    return render_template("template_view.html", template=template)
-
+    return render_template("template_view.html", template=template) #shows one template in detail
 
 @main.route("/templates/<int:template_id>/copy", methods=["POST"])
 def template_copy(template_id):
     if not require_login():
         return redirect(url_for("main.login"))
-
     original = Plan.query.filter_by(id=template_id, is_template=True).first_or_404()
-
     copied_plan = Plan(
-        title=f"{original.title} (copy)",
+        title=f"{original.title} (copy)", #adds (copy) to the title
         description=original.description,
         start_date=original.start_date,
         end_date=original.end_date,
         is_template=False,
         user_id=session["user_id"]
     )
-
     db.session.add(copied_plan)
     db.session.flush()
-
     for original_session in original.sessions:
         copied_session = Session(
             title=original_session.title,
@@ -179,11 +166,9 @@ def template_copy(template_id):
             plan_id=copied_plan.id
         )
         db.session.add(copied_session)
-
-    db.session.commit()
-
+    db.session.commit() #saves to database
     flash("Template copied to your plans.", "success")
-    return redirect(url_for("main.plan_view", plan_id=copied_plan.id))
+    return redirect(url_for("main.plan_view", plan_id=copied_plan.id)) #redirects to new plan view
 
 
 # ----------------------
