@@ -3,6 +3,7 @@ import os
 from flask import Flask #Flask is the tool/framework used to build websites (without it, I can't create Flask app)
 from .models import db #from the models.py file (look in the current app folder) in the same folder, import db 
 from flask_wtf.csrf import CSRFProtect
+from flask_migrate import Migrate
 
 def create_app(test_config=None): #create and set up the Flask app
 
@@ -26,11 +27,12 @@ def create_app(test_config=None): #create and set up the Flask app
         app.config.update(test_config)
     #connect database to Flask app
     db.init_app(app)
+    migrate = Migrate(app, db)
 
     from .routes import main #import main from routes.py (bring in all the website page routes) [avoid circular imports]
     app.register_blueprint(main) #add all routes from the main Blueprint into this app (connect all pages/routes to the website, so that visiting different pages would work)
 
-    with app.app_context(): #tell Flask we are working inside this app now
-        db.create_all() #look at my models.py and create the matching database tables (if they don't already exist, only creates missing tables)
+    #with app.app_context(): #tell Flask we are working inside this app now
+    #    db.create_all() #look at my models.py and create the matching database tables (if they don't already exist, only creates missing tables)
 
     return app #sends the completed Flask app back to run.py that called create_app()
