@@ -46,7 +46,7 @@ def test_plan_create_edit_delete(client, app):
     }, follow_redirects=True)
 
     assert response.status_code == 200
-    updated_plan = Plan.query.get(plan.id)
+    updated_plan = db.session.get(Plan, plan.id)
     assert updated_plan.title == "Updated Plan"
     assert updated_plan.description == "Updated description"
 
@@ -54,7 +54,7 @@ def test_plan_create_edit_delete(client, app):
     response = client.post(f"/plan/{plan.id}/delete", follow_redirects=True)
 
     assert response.status_code == 200
-    deleted_plan = Plan.query.get(plan.id)
+    deleted_plan = db.session.get(Plan, plan.id)
     assert deleted_plan is None
 
 
