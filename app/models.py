@@ -53,6 +53,8 @@ class Plan(db.Model): #defines a plans table (each row is one study plan)
     #True if this plan is a public template
     #False if it’s private
     is_template = db.Column(db.Boolean, default=False, nullable=False)
+    # priority level for the plan
+    priority = db.Column(db.String(20), default="normal", nullable=False)
     #links the plan to a user (users.id)
     #every plan must belong to one user
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
