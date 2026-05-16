@@ -74,10 +74,10 @@
               <div class="prop-label"><i class="bi bi-tag"></i> Type</div>
               <div class="prop-value">
                 <select class="type-badge lecture" name="session_type" id="typeSelect" onchange="updateTypeBadge(this)">
-                  <option value="lecture">Lecture Summary</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="revision">Revision</option>
-                  <option value="assignment">Assignment</option>
+                  <option value="lecture" {% if session_obj and session_obj.session_type == 'lecture' %}selected{% endif %}>Lecture Summary</option>
+                  <option value="workshop" {% if session_obj and session_obj.session_type == 'workshop' %}selected{% endif %}>Workshop</option>
+                  <option value="revision" {% if session_obj and session_obj.session_type == 'revision' %}selected{% endif %}>Revision</option>
+                  <option value="assignment" {% if session_obj and session_obj.session_type == 'assignment' %}selected{% endif %}>Assignment</option>
                   <option value="other">+ Add custom type...</option>
                 </select>
                 <input type="text" id="customType" name="custom_type"
