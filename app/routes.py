@@ -39,83 +39,68 @@ def parse_date(value): #parse dates from forms
 def home():
     return render_template("index.html") #shows index.html to the user
 
-@main.route("/api/check-email") #API route that returns JSON
-def api_check_email():
+@main.route("/api/check-email") #API route that returns JSON???
+def api_check_email(): #live email validation on signup forms
     email = request.args.get("email", "").strip().lower()
     if not email:
         return jsonify({"exists": False})
     user = User.query.filter_by(email=email).first()
-    return jsonify({"exists": user is not None})
-
+    return jsonify({"exists": user is not None}) #returns {"exists": True} if the email is already registered
 
 # ----------------------
 # Auth
 # ----------------------
-@main.route("/signup", methods=["GET", "POST"])
+@main.route("/signup", methods=["GET", "POST"]) #GET (show signup form) and POST (process signup)
 def signup():
-    if require_login():
-        return redirect(url_for("main.dashboard"))
-
-    if request.method == "POST":
+    if require_login(): #checks if the user is logged in first
+        return redirect(url_for("main.dashboard")) #redirects if yes
+    if request.method == "POST": #reads from data
         first_name = request.form.get("firstName", "").strip()
         last_name = request.form.get("lastName", "").strip()
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
         confirm = request.form.get("confirmPassword", "")
-
-        if not first_name or not last_name or not email or not password:
+        if not first_name or not last_name or not email or not password: #make sure all fields filled
             return render_template("signup.html", error="All fields are required.")
-
-        if password != confirm:
+        if password != confirm: #password matches confirmation
             return render_template("signup.html", error="Passwords do not match.")
-
-        if len(password) < 8:
+        if len(password) < 8: #password at least 8 characters
             return render_template("signup.html", error="Password must be at least 8 characters.")
-
-        if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password):
+        if not any(c.isalpha() for c in password) or not any(c.isdigit() for c in password): #password needs to include a letter and a number
             return render_template(
                 "signup.html",
                 error="Password must contain at least one letter and one number."
             )
-
-        if User.query.filter_by(email=email).first():
+        if User.query.filter_by(email=email).first(): #email not already registered
             return render_template("signup.html", error="This email is already registered.")
-
+        #creates a new User with a hashed password
         user = User(
             first_name=first_name,
             last_name=last_name,
             email=email,
             password_hash=generate_password_hash(password, method="pbkdf2:sha256")
         )
-
+        #saves it to the database
         db.session.add(user)
         db.session.commit()
-
-        session["user_id"] = user.id
-        flash("Account created successfully.", "success")
-        return redirect(url_for("main.dashboard"))
-
-    return render_template("signup.html")
-
+        session["user_id"] = user.id #stores the user’s ID in session
+        flash("Account created successfully.", "success") #success message
+        return redirect(url_for("main.dashboard")) #redirects to dashboard
+    return render_template("signup.html") #shows signup.html to the user
 
 @main.route("/login", methods=["GET", "POST"])
 def login():
     if require_login():
         return redirect(url_for("main.dashboard"))
-
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-
-        user = User.query.filter_by(email=email).first()
-
-        if not user or not check_password_hash(user.password_hash, password):
+        user = User.query.filter_by(email=email).first() #check if email exists
+        if not user or not check_password_hash(user.password_hash, password): #checks if email exists and password matches using check_password_hash
             return render_template("login.html", error="Invalid email or password.")
-
-        session["user_id"] = user.id
+        session["user_id"] = user.id #stores user_id in session if login is successful
         flash("Logged in successfully.", "success")
         return redirect(url_for("main.dashboard"))
-
     return render_template("login.html")
 
 
