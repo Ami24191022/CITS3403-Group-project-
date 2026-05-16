@@ -77,14 +77,14 @@
 
           <!-- Share as template -->
           <div class="prop-row">
-            <div class="prop-label">Template</div>
+            <label for="is_template" class="prop-label">Share as template?</label>
             <div class="prop-value">
-              <div class="form-check m-0">
-                <input class="form-check-input" type="checkbox" id="is_template" name="is_template"
-                       {% if plan and plan.is_template %}checked{% endif %}>
-                <label class="form-check-label" for="is_template">Share as template (public)</label>
-              </div>
+              <select name="is_template" id="is_template" class="form-select">
+                <option value="false" {% if not plan.is_template %}selected{% endif %}>No</option>
+                <option value="true" {% if plan.is_template %}selected{% endif %}>Yes</option>
+              </select>
             </div>
+          </div>
           </div>
         </div>
       </div>

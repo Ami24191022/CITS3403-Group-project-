@@ -193,7 +193,7 @@ def plan_edit(plan_id=None):
         description = request.form.get("description", "").strip()
         start_date = parse_date(request.form.get("start_date", ""))
         end_date = parse_date(request.form.get("end_date", ""))
-        is_template = request.form.get("is_template") == "on"
+        is_template = request.form.get("is_template") == "true"
 
         if not title:
             return render_template("plan_edit.html", plan=plan, error="Title is required.")
