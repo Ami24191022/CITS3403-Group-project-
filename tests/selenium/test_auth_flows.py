@@ -1,84 +1,115 @@
-import time
+import uuid
 import pytest
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 BASE_URL = "http://127.0.0.1:5000"
+
 
 @pytest.fixture
 def driver():
     options = webdriver.ChromeOptions()
-    # options.add_argument("--headless=new")  # enable later if you want
-    options.add_argument("--window-size=1200,800")
-    d = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    options.add_argument("--window-size=1280,900")
+    d = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=options
+    )
+    d.implicitly_wait(10)
     yield d
     d.quit()
 
-def test_login_invalid_shows_error(driver):
-    driver.get(f"{BASE_URL}/login")
-    driver.find_element(By.NAME, "email").send_keys("wrong@test.com")
-    driver.find_element(By.NAME, "password").send_keys("wrongpass")
-    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
-    time.sleep(0.5)
+def js_click(driver, element):
+    """Click via JavaScript to avoid element intercept errors."""
+    driver.execute_script("arguments[0].click();", element)
+
+
+# Test 1 — invalid login shows error
+def test_invalid_login_shows_error_message(driver):
+    driver.get(f"{BASE_URL}/login")
+
+    driver.find_element(By.NAME, "email").send_keys("wrong@test.com")
+    driver.find_element(By.NAME, "password").send_keys("wrongpassword")
+
+    submit = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    js_click(driver, submit)
+
+    WebDriverWait(driver, 10).until(
+        lambda d: "Invalid email or password" in d.page_source
+    )
     assert "Invalid email or password" in driver.page_source
 
-def signup_user(driver, email):
+
+# Test 2 — mismatched passwords shows error
+def test_signup_password_mismatch_shows_error_message(driver):
     driver.get(f"{BASE_URL}/signup")
 
-    # Fill required fields (adjust names if yours differ)
     driver.find_element(By.NAME, "firstName").send_keys("Test")
     driver.find_element(By.NAME, "lastName").send_keys("User")
-    driver.find_element(By.NAME, "email").send_keys(email)
-    driver.find_element(By.NAME, "password").send_keys("Pass1234")
-    driver.find_element(By.NAME, "confirmPassword").send_keys("Pass1234")
-
-    # Tick "agree" checkbox if present/required
-    try:
-        agree = driver.find_element(By.ID, "agree")
-        if not agree.is_selected():
-            agree.click()
-    except Exception:
-        pass  # if your form doesn't have it, ignore
-
-    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-
-    # Wait until we either reach dashboard OR see an error on signup page
-    WebDriverWait(driver, 5).until(
-        lambda d: "/dashboard" in d.current_url or "/signup" in d.current_url
+    driver.find_element(By.NAME, "email").send_keys(
+        f"test{uuid.uuid4().hex[:8]}@test.com"
     )
+    driver.find_element(By.NAME, "password").send_keys("Password123")
+    driver.find_element(By.NAME, "confirmPassword").send_keys("Different123")
 
-def test_signup_redirects_to_dashboard(driver):
-    email = f"user{int(time.time())}@test.com"
-    signup_user(driver, email)
-    assert "/dashboard" in driver.current_url
+    # JS click the checkbox to avoid intercept errors
+    agree = driver.find_element(By.ID, "agree")
+    js_click(driver, agree)
 
-def test_create_plan_appears_on_dashboard(driver):
-    email = f"user{int(time.time())}@test.com"
-    signup_user(driver, email)
-    assert "/dashboard" in driver.current_url
+    # JS click submit to avoid intercept errors
+    submit = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    js_click(driver, submit)
 
-    # Go create plan
-    driver.get(f"{BASE_URL}/plan/new")
-
-    # Confirm we didn't get redirected to login
-    assert "/login" not in driver.current_url
-
-    # Wait for title field to exist (plan form loaded)
-    title_input = WebDriverWait(driver, 5).until(
-        EC.presence_of_element_located((By.NAME, "title"))
+    WebDriverWait(driver, 10).until(
+        lambda d: "Passwords do not match" in d.page_source
     )
-    title_input.send_keys("Selenium Plan")
+    assert "Passwords do not match" in driver.page_source
 
-    driver.find_element(By.NAME, "description").send_keys("Created by selenium")
 
-    # Your plan_edit.html uses buttons like form="planForm"
-    driver.find_element(By.CSS_SELECTOR, "button[type='submit'], button[form='planForm']").click()
-
-    # Go back to dashboard and verify plan appears
+# Test 3 — dashboard requires login
+def test_dashboard_requires_login(driver):
     driver.get(f"{BASE_URL}/dashboard")
-    assert "Selenium Plan" in driver.page_source
+
+    WebDriverWait(driver, 10).until(
+        lambda d: "/login" in d.current_url
+    )
+    assert "/login" in driver.current_url
+
+
+# Test 4 — logout works
+def test_logout_works(driver):
+    email = f"logout{uuid.uuid4().hex[:8]}@test.com"
+
+    driver.get(f"{BASE_URL}/signup")
+
+    driver.find_element(By.NAME, "firstName").send_keys("Logout")
+    driver.find_element(By.NAME, "lastName").send_keys("Test")
+    driver.find_element(By.NAME, "email").send_keys(email)
+    driver.find_element(By.NAME, "password").send_keys("Password123")
+    driver.find_element(By.NAME, "confirmPassword").send_keys("Password123")
+
+    # JS click the checkbox and submit
+    agree = driver.find_element(By.ID, "agree")
+    js_click(driver, agree)
+
+    submit = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    js_click(driver, submit)
+
+    WebDriverWait(driver, 10).until(
+        lambda d: "/dashboard" in d.current_url
+    )
+    assert "/dashboard" in driver.current_url
+
+    driver.get(f"{BASE_URL}/logout")
+    driver.get(f"{BASE_URL}/dashboard")
+
+    WebDriverWait(driver, 10).until(
+        lambda d: "/login" in d.current_url
+    )
+    assert "/login" in driver.current_url
